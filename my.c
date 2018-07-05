@@ -37,6 +37,8 @@ unsigned char TEMPCONTROLMODE = FALSE;
 
 unsigned char KeyFlag = 0;
 
+unsigned char PIDPwd[4] = {1,2,3,4};
+
 unsigned char checkLED (char c){
 	if (c >= '0' && c <= '9') return (c-'0');
 	else if (c >= 'A' && c <= 'F') return (c-'A'+10);
@@ -55,7 +57,7 @@ unsigned char checkLED (char c){
 }
 
 void showMainMenu(void){
-	char* menuBuffer[4] = {"tP- ", "run-", "Con-", "PA- "};
+	char* menuBuffer[] = {"tP- ", "run-", "Con-", "PA- ", "P1d-"};
 	unsigned char currentMenu = 0;
 	while(1){
 		display(DispBuff); //显示（按显缓单元的内容显示）
@@ -64,11 +66,11 @@ void showMainMenu(void){
 		{   
 		// 有键按下，按照键号执行菜单显示或进入子菜单
 			if (KeyNum==DOWN){
-				currentMenu = changeMenuPtr(currentMenu, FALSE, 4);
+				currentMenu = changeMenuPtr(currentMenu, FALSE, 5);
 				displayStringInRow(menuBuffer[currentMenu], TRUE);
 			}
 			else if (KeyNum==UP){
-				currentMenu = changeMenuPtr(currentMenu, TRUE, 4);
+				currentMenu = changeMenuPtr(currentMenu, TRUE, 5);
 				displayStringInRow(menuBuffer[currentMenu], TRUE);
 			}
 			else if (KeyNum==ENTER){
@@ -77,6 +79,7 @@ void showMainMenu(void){
 					case 1: showMotorTest();break;
 					case 2:	conWithTemp();displayStringInRow("Con-", TRUE);break;
 					case 3: showPAMenu();break;
+					// case 4: conWithPID();displayStringInRow("Con-", TRUE);break;
 				}
 				displayStringInRow("    ", FALSE);
 			}
@@ -313,7 +316,7 @@ unsigned char changeMenuPtr(unsigned char current, unsigned char inc, unsigned c
 }
 
 void showPAMenu(void){
-	char* menuBuffer[2] = {" run", " Con"};
+	char* menuBuffer[] = {" run", " Con", " P1d"};
 	unsigned char currentMenu = 0;
 	displayStringInRow(" run ", FALSE);
 	while(1){
@@ -322,17 +325,18 @@ void showPAMenu(void){
 		if(KeyValue!=0xff)
 		{ 
 			if (KeyNum==DOWN){
-				currentMenu = changeMenuPtr(currentMenu, FALSE, 2);
+				currentMenu = changeMenuPtr(currentMenu, FALSE, 3);
 				displayStringInRow(menuBuffer[currentMenu], FALSE);
 			}
 			else if (KeyNum==UP){
-				currentMenu = changeMenuPtr(currentMenu, TRUE, 2);
+				currentMenu = changeMenuPtr(currentMenu, TRUE, 3);
 				displayStringInRow(menuBuffer[currentMenu], FALSE);
 			}
 			else if (KeyNum==ENTER){
 				switch(currentMenu){
 					case 0: showCurrentRun();displayStringInRow("PA- ", TRUE);displayStringInRow(" run", FALSE); break;
 					case 1: showCurrentTmpThreshould(); displayStringInRow("PA- ", TRUE);displayStringInRow(" Con", FALSE);break;
+					case 2: showCurrentPIDParam(); displayStringInRow("PA- ", TRUE);displayStringInRow(" P1d", FALSE);break;
 				}
 			}
 			else if (KeyNum==BACK){
@@ -659,8 +663,6 @@ void conWithTemp(void){
 			TEMPCONTROLMODE = FALSE;
 			return;
 		}
-		// for(i=0; i<30000; i++)	Somenop50();
-		// if (i%6==0)	displayIntInRow(PWM, FALSE);
 		i++;
 
 	}
@@ -821,6 +823,39 @@ void writeTempThresholdToC16(){
 	unsigned char i;
 	for(i=0; i<2; i++){
 		ewrite_add(tempThresholdStartAddress+i, tempThreshold[i]);
+	}
+}
+
+void showCurrentPIDParam(){
+	unsigned char flag = checkPwd();
+	if (flag == FALSE)	return;
+}
+
+unsigned char checkPwd(){
+	unsigned char i;
+	unsigned char flag = FALSE;
+	displayStringInRow("PA55", TRUE);
+	displayStringInRow("0000", FALSE);
+	
+	for(i = 0; i < 4; i++){
+		while(TRUE){
+			Key();
+			switch (KeyNum){
+				case BACK: return FALSE;
+				case UP: DispBuff[i]=changeMenuPtr(DispBuff[i], TRUE, 10); display(DispBuff); break;
+				case DOWN: DispBuff[i]=changeMenuPtr(DispBuff[i], FALSE, 10); display(DispBuff); break;
+				case ENTER: flag=TRUE; break;
+			}
+			if (flag){
+				flag = FALSE;
+				break;
+			}
+		}
+	}
+
+	for(i = 0; i < 4; i++){
+		if (DispBuff[i] != PIDPwd[i])	return FALSE;
+		return TRUE;
 	}
 }
 
