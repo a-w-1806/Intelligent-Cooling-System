@@ -37,7 +37,9 @@ unsigned char TEMPCONTROLMODE = FALSE;
 
 unsigned char KeyFlag = 0;
 
-unsigned char PIDPwd[4] = {1,2,3,4};
+unsigned char PIDPwd[4] = {1,1,1,1};
+unsigned char PIDParam[3];
+unsigned char PIDParamStartAddress = 12;
 
 unsigned char checkLED (char c){
 	if (c >= '0' && c <= '9') return (c-'0');
@@ -827,8 +829,69 @@ void writeTempThresholdToC16(){
 }
 
 void showCurrentPIDParam(){
+	unsigned char i;
 	unsigned char flag = checkPwd();
 	if (flag == FALSE)	return;
+	displayStringInRow("A- P", TRUE);
+	readPIDParamFromC16();
+	DispBuff[0] = 32;
+	DispBuff[1] = PIDParam[0];
+	DispBuff[2] = PIDParam[1];
+	DispBuff[3] = PIDParam[2];
+	display(DispBuff);
+
+	flag = FALSE;
+	for(i = 1; i < 4; i++){
+		while(TRUE){
+			Key();
+			switch (KeyNum){
+				case BACK: return;
+				case ENTER: flag=TRUE; PIDParam[i-1] = DispBuff[i];break;
+				// case UP: DispBuff[i]=changeMenuPtr(DispBuff[i], TRUE, 10); display(DispBuff);break;
+				case UP:
+					if (i!=2){
+						DispBuff[i]=changeMenuPtr(DispBuff[i], TRUE, 10); 
+					}
+					else{
+						DispBuff[i]=changeMenuPtr(DispBuff[i]-16, TRUE, 10);
+						DispBuff[i] += 16;
+					}
+					display(DispBuff);
+					break;
+				case DOWN:
+					if (i!=2){
+						DispBuff[i]=changeMenuPtr(DispBuff[i], FALSE, 10); 
+					}
+					else{
+						DispBuff[i]=changeMenuPtr(DispBuff[i]-16, FALSE, 10);
+						DispBuff[i] += 16;
+					}
+					display(DispBuff);
+					break;
+			}
+			// if (i==2)	DispBuff[i] += 16;
+			if (flag){
+				flag = FALSE;
+				break;
+			}
+		}
+		writePIDParamToC16();
+	}
+}
+
+void readPIDParamFromC16(){
+	unsigned char i;
+	for(i=0; i<3; i++){
+		PIDParam[i] = eread_add(PIDParamStartAddress+i);
+		if (PIDParam[i] >= 10 && i != 1)	PIDParam[i] = 0;
+	}
+}
+
+void writePIDParamToC16(){
+	unsigned char i;
+	for(i=0; i<3; i++){
+		ewrite_add(PIDParamStartAddress+i, PIDParam[i]);
+	}
 }
 
 unsigned char checkPwd(){
@@ -852,11 +915,10 @@ unsigned char checkPwd(){
 			}
 		}
 	}
-
 	for(i = 0; i < 4; i++){
 		if (DispBuff[i] != PIDPwd[i])	return FALSE;
-		return TRUE;
 	}
+	return TRUE;
 }
 
 void main (void){
@@ -869,6 +931,8 @@ void main (void){
 	TL0 = timerL;
 	EA = 1;
 	ET0 = 1;
+
+	
 
  	showMainMenu();
 }
