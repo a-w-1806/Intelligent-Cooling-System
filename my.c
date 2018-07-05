@@ -6,15 +6,6 @@
 #include <intrins.h>
 #include <string.h>
 
-// extern sbit CS  = P1^4;
-// extern sbit CLK  = P1^5;
-// extern sbit DATA = P1^7;
-// extern sbit DS1820_DQ = P1^3;
-// extern sbit Motor  = P1^2;
-// extern sbit ECLK  = P1^1;
-// extern sbit EDTA  =  P1^0;
-// sbit DS1820_DQ = P1^3;
-
 unsigned char LEDValue[50] = {0xFC,0x44,0x79,0x5D,0xC5,0x9D,0xBD,0x54,0xFD,0xDD,0xF5,0xAD,0xB8,0x6D,0xB9,0xB1, //0-F
   							0xFE,0x46,0x7B,0x5F,0xC7,0x9F,0xBF,0x56,0xFF,0xDF,0xF7,0xAF,0xBA,0x6F,0xBB,0xB3, //0.-F.
 	                        0x00,0xA9,0xF1,0x21,0x2C,0x25,0x2D,0x01}; // 32null，33t，34P,35r,36u,37n,38o,39-
@@ -22,9 +13,12 @@ unsigned char LEDValue[50] = {0xFC,0x44,0x79,0x5D,0xC5,0x9D,0xBD,0x54,0xFD,0xDD,
 unsigned char DispBuff[8] = {32,32,32,32,32,32,32,32};
 unsigned char code KeyTabel[4] = {0x3B, 0x3A, 0x39, 0x38}; // down up back enter
 
-unsigned char runOptions[10] = {0, 20, 30, 40, 50, 60, 70, 80, 90, 99};
+unsigned char runOptions[10];
+unsigned char runOptionsStartAddress = 0;
 
-unsigned char tempThreshold[2] = {26, 30};
+unsigned char tempThreshold[2];
+unsigned char tempThresholdStartAddress = 10;
+
 unsigned char temperature[2];
 
 unsigned char MotorThre;
@@ -33,7 +27,6 @@ unsigned char MotorNow = 0;
 unsigned char timerH = 0xEC;
 unsigned char timerL = 0x77;
 
-// unsigned char onCounter, offCounter;
 unsigned char counter = 0;
 
 unsigned char temp[5];
@@ -42,6 +35,7 @@ unsigned char PWM = 50;
 
 unsigned char TEMPCONTROLMODE = FALSE;
 
+unsigned char KeyFlag = 0;
 
 unsigned char checkLED (char c){
 	if (c >= '0' && c <= '9') return (c-'0');
@@ -79,7 +73,6 @@ void showMainMenu(void){
 			}
 			else if (KeyNum==ENTER){
 				switch(currentMenu){
-					// TODO
 					case 0: showTemperature(FALSE);break;
 					case 1: showMotorTest();break;
 					case 2:	conWithTemp();displayStringInRow("Con-", TRUE);break;
@@ -205,16 +198,19 @@ void display(unsigned char buff[])
    {
 	KeyNum = 0xff;	
 	KeyValue = 0xff;
+	KeyFlag = 0;
    }
    else
    {
-      if(KeyValue!=0xff) 
-  	  KeyNum=0xff;
+      if(KeyValue!=0xff && KeyFlag < 10000){
+		KeyNum=0xff;
+		KeyFlag++;
+	  } 
       else{
-	  KeyValue = temp;  
-	  for(i=0;i<=3;i++)
-	     if (KeyValue == KeyTabel[i])
-		 { KeyNum = i; break; }	
+		KeyValue = temp;  
+		for(i=0;i<=3;i++)
+			if (KeyValue == KeyTabel[i])
+			{ KeyNum = i; break; }	
       }
    }	
 }
@@ -273,7 +269,6 @@ unsigned char receive_byte(void)
 void displayStringInRow (char* string, unsigned char upper){
 	unsigned char startIndex;
 	unsigned char i;
-	// unsigned char len = strlen(string);
 	if (upper == TRUE) startIndex = 4;
 	else startIndex = 0;
 	
@@ -303,17 +298,6 @@ void displayIntInRow(unsigned char i, unsigned char upper){
 		i /= 10;
 	}
 	display(DispBuff);
-
-	// unsigned char startIndex;
-	// unsigned char i;
-	// // unsigned char len = strlen(string);
-	// if (upper == TRUE) startIndex = 4;
-	// else startIndex = 0;
-	// if (i == 100){
-	// 	displayStringInRow(" 100", upper);
-	// 	return;
-	// }
-	// else
 }
 
 unsigned char changeMenuPtr(unsigned char current, unsigned char inc, unsigned char volume){
@@ -359,11 +343,10 @@ void showPAMenu(void){
 
 void showCurrentRun(void){
 	unsigned char currentMenu = 0;
+
+	readRunOptionsFromC16();
 	displayStringInRow("P- 0", TRUE);
 	displayIntInRow(runOptions[0], FALSE);
-	// displayStringInRow("  74", FALSE);
-	// displayStringInRow(itoa(runOptions[0],strbuffer,10))
-	// unsigned char ptr = 0;
 
 	while (1){
 		// display(DispBuff); //显示（按显缓单元的内容显示）
@@ -390,6 +373,7 @@ void showCurrentRun(void){
 				display(DispBuff);
 			}
 			if (KeyNum==BACK){
+				writeRunOptionsToC16();
 				return;
 			}
 		}
@@ -397,13 +381,12 @@ void showCurrentRun(void){
 }
 
 void showCurrentTmpThreshould(void){
-	// TODO
 	unsigned char currentMenu = 0;
 	char* menuBuffer[2] = {"PA-b", "PA-F"};
+
+	readTempThresholdFromC16();
 	displayStringInRow(menuBuffer[currentMenu], TRUE);
-	// displayStringInRow("  26", FALSE);
 	displayIntInRow(tempThreshold[currentMenu], FALSE);
-	// unsigned char ptr = 0;
 
 	while (1){
 		Key();
@@ -432,6 +415,7 @@ void showCurrentTmpThreshould(void){
 				display(DispBuff);
 			}
 			if (KeyNum==BACK){
+				writeTempThresholdToC16();
 				return;
 			}
 		}
@@ -439,57 +423,26 @@ void showCurrentTmpThreshould(void){
 }
 
 void changeNumConti(unsigned char *num){
-	// unsigned char temp,i;
-	// unsigned char original = *num;
-	// while (TRUE){
-	// 	temp = ReadKey();  //读键值
-	// 	if (temp==0xff)
-	// 	{
-	// 		KeyNum = 0xff;	
-	// 		KeyValue = 0xff;
-	// 	}
-	// 	else
-	// 	{
-	// 		// if(KeyValue!=0xff) 
-	// 		// KeyNum=0xff;
-	// 		// else{
-	// 		KeyValue = temp;  
-	// 		for(i=0;i<=3;i++)
-	// 			if (KeyValue == KeyTabel[i])
-	// 			{ KeyNum = i; break; }	
-	// 		// }
-	// 	}
-	// 	switch (KeyNum){
-	// 		case UP: (*num)++; displayIntInRow(*num, FALSE);break;
-	// 		case DOWN: (*num)--; displayIntInRow(*num, FALSE);break;
-	// 		case BACK: *num = original;return;
-	// 		case ENTER: return;
-	// 	}
-	// }
 	unsigned char original;
+	unsigned char i;
 
-	// while(1){
-	// 	temp = ReadKey();	
-	// 	while(temp!=0xff) {}
-	// 	Key();
-	// 	if (temp!=0xff){
-	// 		KeyValue = temp;  
-	// 		for(i=0;i<=3;i++)
-	// 			if (KeyValue == KeyTabel[i])
-	// 			{ KeyNum = i; break; }	
-	// 		switch (KeyNum){
-	// 			case UP: (*num)++; displayIntInRow(*num, FALSE);break;
-	// 			case DOWN: (*num)--; displayIntInRow(*num, FALSE);break;
-	// 			case BACK: *num = original;return;
-	// 			case ENTER: return;
-	// 		}
-	// 	}	
-	// }
 	display(DispBuff);
 	waitUntilRelease();
-	// KeyNum = 0xff;
-	// temp = ReadKey();
-	// while(temp == 0x38) {temp = ReadKey;}
+
+	// // single push
+	// Key();
+	// while(KeyNum == 0xff) {Key();}
+	// switch (KeyNum){
+	// 	case UP: (*num) = changeMenuPtr(*num, TRUE, 100); displayIntInRow(*num, FALSE);break;
+	// 	case DOWN: (*num) = changeMenuPtr(*num, FALSE, 100); displayIntInRow(*num, FALSE);break;
+	// 	case BACK: return;
+	// 	case ENTER: return;
+	// }
+	
+	// for(i=0; i<1000; i++)
+	// 	Somenop50();
+
+	// if (KeyValue != 0xff){
 	while(1){
 		KeyValue = 0xff;
 		Key();
@@ -507,19 +460,7 @@ void waitUntilRelease(void){
 	return;
 }
 
-void main (void){
-  	Init_7279();	// 初始化堆栈    			// 初始化7279
-  	DS18B20_Init();
-	Motor = 0;
-  	displayStringInRow("tP- ", TRUE);
-	TMOD = 0x01;
-	TH0 = timerH;
-	TL0 = timerL;
-	EA = 1;
-	ET0 = 1;
 
- 	showMainMenu();
-}
 
 void showTemperature(unsigned char upper){
 	unsigned char i;
@@ -609,11 +550,9 @@ void displayTemperature(unsigned char upper){
 void showMotorTest(void){
 	unsigned char currentMenu = 0;
 	TEMPCONTROLMODE = FALSE;
+	readRunOptionsFromC16();
 	displayStringInRow("r- 0", TRUE);
 	displayIntInRow(runOptions[0], FALSE);
-	// displayStringInRow("  74", FALSE);
-	// displayStringInRow(itoa(runOptions[0],strbuffer,10))
-	// unsigned char ptr = 0;
 
 	while (1){
 		// display(DispBuff); //显示（按显缓单元的内容显示）
@@ -666,27 +605,8 @@ void showMotorTest(void){
 
 void runMotorWithPWM(){
 	MotorThre = PWM;
-	// onCounter = PWM;
-	// offCounter = 100 - PWM;
-	// TR0 = 1;
 	while(1){
 		if (TEMPCONTROLMODE) {
-			// TR0 = 0;
-			// displayIntInRow(PWM, FALSE);
-			// calcCurrentPWM();
-			// MotorThre = PWM;
-			// TR0 = 1;
-			// Somenop50();
-			// Somenop50();
-			// Somenop50();
-			// Somenop50();
-			// Somenop50();
-			// Somenop50();
-			// Somenop50();
-			// Somenop50();
-			// Somenop50();
-			// TR0 = 0;
-			// break;
 			displayIntInRow(PWM, FALSE);
 			TR0 = 1;
 			while (TR0 == 1);
@@ -725,33 +645,16 @@ void timer0(void) interrupt 1 using 3{
 		if (TEMPCONTROLMODE)	TR0 = 0;
 	}
 	
-	// if (Motor == 1){
-	// 	if (counter < onCounter){counter++; return;}
-	// 	else{
-	// 		counter = 0;
-	// 		Motor = ~Motor;
-	// 		P2 ^= 0x02;
-	// 	}
-	// }
-	// else{
-	// 	if (counter < offCounter){
-	// 		counter++; return;
-	// 	}
-	// 	else{
-	// 		counter = 0;
-	// 		Motor = ~Motor;
-	// 		P2 ^= 0x02;
-	// 	}
-	// }
-	// if(MotorNow<=MotorThre) 	MotorNow++;
-	// else {MotorNow = 0; Motor = ~Motor; P2 ^= 0x02;}
 }
 
 void conWithTemp(void){
 	TEMPCONTROLMODE = TRUE;
 	while(1){
 		Key();
-		if (KeyNum == BACK) return;
+		if (KeyNum == BACK){
+			TEMPCONTROLMODE = FALSE;
+			return;
+		}
 		showTemperature(TRUE);
 		calcCurrentPWM();
 		runMotorWithPWM();
@@ -761,11 +664,171 @@ void conWithTemp(void){
 void calcCurrentPWM(){
 	// Now we have temp[]. We have to change PWM.
 	unsigned char currentTemp = 10*temp[1]+temp[2];
-	unsigned int nominator = (temp[1]*1000+temp[2]*100+temp[3]*10+temp[4]) - tempThreshold[0]*100;
-	unsigned int denom = 2 * (tempThreshold[1] - tempThreshold[0]);
+	unsigned int nominator, denom;
 
+	readTempThresholdFromC16();
+	nominator = (temp[1]*1000+temp[2]*100+temp[3]*10+temp[4]) - tempThreshold[0]*100;
+	denom = 2 * (tempThreshold[1] - tempThreshold[0]);
 	if (currentTemp >= tempThreshold[1]){PWM = 100; return;}
 	else if (currentTemp < tempThreshold[0]) {PWM = 0; return;}
 
 	PWM = nominator / denom + 50;
+}
+
+void estart() //起始信号 当时钟线为1，数据线有个下降沿
+{   
+    ECLK=1;
+    EDTA=1;
+    Somenop();
+    EDTA=0; 
+    ECLK=0;
+    Somenop();
+}
+
+void estop()//终止信号 当时钟线为1，数据线有个上升沿
+{
+    EDTA=0;
+    ECLK=1;
+    Somenop();
+    EDTA=1;
+    ECLK=0;
+    Somenop();
+}
+
+bit ack() //应答信号由从机发出信号为sda由1变为0
+{
+    
+    ECLK=1;
+    EDTA=1;
+    if(EDTA==1){
+        ECLK=0;
+        return 1;
+    }else{
+        ECLK=0;
+        return 0;
+    }
+    
+}
+
+void init_24c16()//24c16初始化
+{
+    EDTA=1;
+    Somenop();
+    ECLK=1;
+    Somenop();
+}
+
+void ewrite_byte(unsigned char dat) //字节写（写数据或地址）数据线sda不变，scl有个上升沿，写入数据
+{
+    unsigned char i;
+    for(i=0;i<8;i++)
+    {
+        ECLK=0;
+        Somenop();
+        EDTA=dat&0x80;
+        Somenop();
+        ECLK=1;
+        Somenop();
+        dat <<= 1;
+    }
+    ECLK=0;
+    Somenop();
+}
+
+unsigned char eread_byte() //字节读 scl有下降沿读出
+{
+    unsigned char i,k;
+    for(i=0;i<8;i++)
+    {
+    ECLK=1;
+    Somenop();
+    k=(k<<1)|EDTA;
+    ECLK=0;
+    Somenop();
+    }
+    return k;
+}
+
+void ewrite_add(unsigned char add,unsigned char dat)
+{
+    do{
+    estart();
+    ewrite_byte(0xa0);
+    }
+    while(ack());
+    
+    ewrite_byte(add);
+    ack();
+    do{
+    ewrite_byte(dat);
+    }
+    while(ack());
+    estop();
+}
+
+unsigned char eread_add(unsigned char add)
+{
+    unsigned char dat;
+
+    do{
+    estart();
+    ewrite_byte(0xa0);
+    }
+    while(ack());
+    
+    ewrite_byte(add);
+    ack();
+
+    
+    do{
+    estart();
+    ewrite_byte(0xa1);
+    }
+    while(ack());
+
+    dat=eread_byte();
+    estop();
+    return dat;
+}
+
+void readRunOptionsFromC16(){
+	unsigned char i;
+	for(i=0; i<10; i++){
+		runOptions[i] = eread_add(runOptionsStartAddress+i);
+	}
+}
+
+void writeRunOptionsToC16(){
+	unsigned char i;
+	for(i=0; i<10; i++){
+		ewrite_add(runOptionsStartAddress+i, runOptions[i]);
+	}
+}
+
+void readTempThresholdFromC16(){
+	unsigned char i;
+	for(i=0; i<2; i++){
+		tempThreshold[i] = eread_add(tempThresholdStartAddress+i);
+	}
+}
+
+void writeTempThresholdToC16(){
+	unsigned char i;
+	for(i=0; i<2; i++){
+		ewrite_add(tempThresholdStartAddress+i, tempThreshold[i]);
+	}
+}
+
+void main (void){
+  	Init_7279();	// 初始化堆栈    			// 初始化7279
+  	DS18B20_Init();
+	Motor = 0;
+  	displayStringInRow("tP- ", TRUE);
+	TMOD = 0x01;
+	TH0 = timerH;
+	TL0 = timerL;
+	EA = 1;
+	ET0 = 1;
+
+ 	showMainMenu();
 }

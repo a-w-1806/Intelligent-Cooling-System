@@ -78,4 +78,9 @@ void runMotorWithPWM();
 void conWithTemp(void);
 void calcCurrentPWM();
 
+void readRunOptionsFromC16();
+void writeRunOptionsToC16();
+void readTempThresholdFromC16();
+void writeTempThresholdToC16();
+
 #endif
