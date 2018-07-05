@@ -24,8 +24,8 @@ unsigned char temperature[2];
 unsigned char MotorThre;
 unsigned char MotorNow = 0;
 
-unsigned char timerH = 0xEC;
-unsigned char timerL = 0x77;
+unsigned char timerH = 0xFF;
+unsigned char timerL = 0x00;
 
 unsigned char counter = 0;
 
@@ -370,6 +370,7 @@ void showCurrentRun(void){
 				DispBuff[4] = 10;
 				// runOptions[currentMenu] = changeNumConti(runOptions[currentMenu]);
 				changeNumConti(&runOptions[currentMenu]);
+				writeRunOptionsToC16();
 				waitUntilRelease();
 				DispBuff[4] = 34; // "P"
 				display(DispBuff);
@@ -411,6 +412,7 @@ void showCurrentTmpThreshould(void){
 				DispBuff[6] = 32;	// " "
 				// tempThreshold[currentMenu] = changeNumConti(tempThreshold[currentMenu]);
 				changeNumConti(&tempThreshold[currentMenu]);
+				writeTempThresholdToC16();
 				DispBuff[4] = 34; // "P"
 				DispBuff[5] = 10;
 				DispBuff[6] = 39;
@@ -576,29 +578,24 @@ void showMotorTest(void){
 				DispBuff[7] = 39;
 				return;
 			}
-			// else{
-			// 	if (KeyNum==ENTER) runMotorWithPWM(runOptions[currentMenu]);
-			// 	DispBuff[4] = 35;	// r
-			// 	DispBuff[5] = 39;	// -
-			// 	DispBuff[6] = 32;	// space
-			// 	DispBuff[7] = currentMenu;
-			// 	displayIntInRow(runOptions[currentMenu], FALSE);
-			// 	waitUntilRelease();
-			// }
 		}
 	}
 }
 
 
 void runMotorWithPWM(){
+	unsigned char i;
+
 	MotorThre = PWM;
+
+	// displayIntInRow(PWM, FALSE);
 	while(1){
 		if (TEMPCONTROLMODE) {
-			displayIntInRow(PWM, FALSE);
-			TR0 = 1;
-			while (TR0 == 1);
+			for (i=0; i<10; i++){
+				TR0 = 1;
+				while (TR0 == 1);
+			}
 			break;
-
 		}
 		else{
 			TR0 = 1;
@@ -635,6 +632,7 @@ void timer0(void) interrupt 1 using 3{
 }
 
 void conWithTemp(void){
+	unsigned int i = 0;
 	TEMPCONTROLMODE = TRUE;
 	while(1){
 		Key();
@@ -643,8 +641,28 @@ void conWithTemp(void){
 			return;
 		}
 		showTemperature(TRUE);
+		if (i%6==0)	displayIntInRow(PWM, FALSE);
+		Key();
+		if (KeyNum == BACK){
+			TEMPCONTROLMODE = FALSE;
+			return;
+		}
 		calcCurrentPWM();
+		Key();
+		if (KeyNum == BACK){
+			TEMPCONTROLMODE = FALSE;
+			return;
+		}
 		runMotorWithPWM();
+		Key();
+		if (KeyNum == BACK){
+			TEMPCONTROLMODE = FALSE;
+			return;
+		}
+		// for(i=0; i<30000; i++)	Somenop50();
+		// if (i%6==0)	displayIntInRow(PWM, FALSE);
+		i++;
+
 	}
 }
 
