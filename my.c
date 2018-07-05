@@ -202,7 +202,7 @@ void display(unsigned char buff[])
    }
    else
    {
-      if(KeyValue!=0xff && KeyFlag < 10000){
+      if(KeyValue!=0xff && KeyFlag < 250){
 		KeyNum=0xff;
 		KeyFlag++;
 	  } 
@@ -212,6 +212,7 @@ void display(unsigned char buff[])
 			if (KeyValue == KeyTabel[i])
 			{ KeyNum = i; break; }	
       }
+
    }	
 }
 
@@ -369,6 +370,7 @@ void showCurrentRun(void){
 				DispBuff[4] = 10;
 				// runOptions[currentMenu] = changeNumConti(runOptions[currentMenu]);
 				changeNumConti(&runOptions[currentMenu]);
+				waitUntilRelease();
 				DispBuff[4] = 34; // "P"
 				display(DispBuff);
 			}
@@ -422,35 +424,20 @@ void showCurrentTmpThreshould(void){
 	}
 }
 
+
 void changeNumConti(unsigned char *num){
-	unsigned char original;
-	unsigned char i;
+	unsigned char original = *num;
 
 	display(DispBuff);
 	waitUntilRelease();
-
-	// // single push
-	// Key();
-	// while(KeyNum == 0xff) {Key();}
-	// switch (KeyNum){
-	// 	case UP: (*num) = changeMenuPtr(*num, TRUE, 100); displayIntInRow(*num, FALSE);break;
-	// 	case DOWN: (*num) = changeMenuPtr(*num, FALSE, 100); displayIntInRow(*num, FALSE);break;
-	// 	case BACK: return;
-	// 	case ENTER: return;
-	// }
-	
-	// for(i=0; i<1000; i++)
-	// 	Somenop50();
-
-	// if (KeyValue != 0xff){
-	while(1){
-		KeyValue = 0xff;
+	while (TRUE){
 		Key();
 		switch (KeyNum){
 			case UP: (*num) = changeMenuPtr(*num, TRUE, 100); displayIntInRow(*num, FALSE);break;
 			case DOWN: (*num) = changeMenuPtr(*num, FALSE, 100); displayIntInRow(*num, FALSE);break;
-			case BACK: *num = original;return;
+			case BACK: (*num) = original;displayIntInRow(*num, FALSE);return;
 			case ENTER: return;
+			default: break;
 		}
 	}
 }
