@@ -83,10 +83,10 @@ void writeRunOptionsToC16();
 void readTempThresholdFromC16();
 void writeTempThresholdToC16();
 
-void showCurrentPIDParam();
+void showCurrentPIDGoalTemp();
 unsigned char checkPwd();
 
-void readPIDParamFromC16();
-void writePIDParamToC16();
+void readPIDGoalTempFromC16();
+void writePIDGoalTempToC16();
 
 #endif

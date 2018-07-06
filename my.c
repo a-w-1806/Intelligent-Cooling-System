@@ -37,9 +37,18 @@ unsigned char TEMPCONTROLMODE = FALSE;
 
 unsigned char KeyFlag = 0;
 
-unsigned char PIDPwd[4] = {1,1,1,1};
-unsigned char PIDParam[3];
-unsigned char PIDParamStartAddress = 12;
+unsigned char PIDPwd[4] = {0,0,0,0};
+// unsigned char PIDParam[3];
+unsigned char PIDGoalTempAddress = 12;
+
+struct _pid{
+	unsigned char goalTemp[3];
+	unsigned char currentTemp[3];
+	unsigned char Kp, Ki, Kd;
+	unsigned char currentPWM;
+	float err, errLast;
+	float integral;
+}pid;
 
 unsigned char checkLED (char c){
 	if (c >= '0' && c <= '9') return (c-'0');
@@ -338,7 +347,7 @@ void showPAMenu(void){
 				switch(currentMenu){
 					case 0: showCurrentRun();displayStringInRow("PA- ", TRUE);displayStringInRow(" run", FALSE); break;
 					case 1: showCurrentTmpThreshould(); displayStringInRow("PA- ", TRUE);displayStringInRow(" Con", FALSE);break;
-					case 2: showCurrentPIDParam(); displayStringInRow("PA- ", TRUE);displayStringInRow(" P1d", FALSE);break;
+					case 2: showCurrentPIDGoalTemp(); displayStringInRow("PA- ", TRUE);displayStringInRow(" P1d", FALSE);break;
 				}
 			}
 			else if (KeyNum==BACK){
@@ -828,16 +837,16 @@ void writeTempThresholdToC16(){
 	}
 }
 
-void showCurrentPIDParam(){
+void showCurrentPIDGoalTemp(){
 	unsigned char i;
 	unsigned char flag = checkPwd();
 	if (flag == FALSE)	return;
 	displayStringInRow("A- P", TRUE);
-	readPIDParamFromC16();
+	readPIDGoalTempFromC16();
 	DispBuff[0] = 32;
-	DispBuff[1] = PIDParam[0];
-	DispBuff[2] = PIDParam[1];
-	DispBuff[3] = PIDParam[2];
+	DispBuff[1] = pid.goalTemp[0];
+	DispBuff[2] = pid.goalTemp[1];
+	DispBuff[3] = pid.goalTemp[2];
 	display(DispBuff);
 
 	flag = FALSE;
@@ -846,7 +855,7 @@ void showCurrentPIDParam(){
 			Key();
 			switch (KeyNum){
 				case BACK: return;
-				case ENTER: flag=TRUE; PIDParam[i-1] = DispBuff[i];break;
+				case ENTER: flag=TRUE; pid.goalTemp[i-1] = DispBuff[i];break;
 				// case UP: DispBuff[i]=changeMenuPtr(DispBuff[i], TRUE, 10); display(DispBuff);break;
 				case UP:
 					if (i!=2){
@@ -875,22 +884,22 @@ void showCurrentPIDParam(){
 				break;
 			}
 		}
-		writePIDParamToC16();
+		writePIDGoalTempToC16();
 	}
 }
 
-void readPIDParamFromC16(){
+void readPIDGoalTempFromC16(){
 	unsigned char i;
 	for(i=0; i<3; i++){
-		PIDParam[i] = eread_add(PIDParamStartAddress+i);
-		if (PIDParam[i] >= 10 && i != 1)	PIDParam[i] = 0;
+		pid.goalTemp[i] = eread_add(PIDGoalTempAddress+i);
+		if (pid.goalTemp[i] >= 10 && i != 1)	pid.goalTemp[i] = 0;
 	}
 }
 
-void writePIDParamToC16(){
+void writePIDGoalTempToC16(){
 	unsigned char i;
 	for(i=0; i<3; i++){
-		ewrite_add(PIDParamStartAddress+i, PIDParam[i]);
+		ewrite_add(PIDGoalTempAddress+i, pid.goalTemp[i]);
 	}
 }
 
