@@ -646,8 +646,8 @@ void timer0(void) interrupt 1 using 3{
 	
 }
 
-	unsigned int i = 0;
 void conWithTemp(unsigned char usingPID){
+	unsigned int i = 0;
 	TEMPCONTROLMODE = TRUE;
 	PIDInit();
 	while(1){
@@ -968,9 +968,10 @@ void calcPWMPID(){
 		return;
 	}
 	pid.integral += pid.err;
-	pid.currentPWM = pid.Kp * pid.err + pid.Ki * pid.integral + pid.Kd * (pid.err - pid.errLast);
+	pid.currentPWM = pid.Kp * pid.err + pid.Ki * pid.integral + pid.Kd * (pid.err - pid.errLast) + 50;
 	pid.errLast = pid.err;
 	if (pid.currentPWM >= 100)	pid.currentPWM = 100;
+	else if (pid.currentPWM <= 0) pid.currentPWM = 50;
 
 	PWM = pid.currentPWM;
 }
