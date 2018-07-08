@@ -29,7 +29,7 @@ unsigned char timerL = 0x00;
 
 unsigned char counter = 0;
 
-unsigned char temp[5];
+unsigned char temp[5]; // bai shi ge shifen baifen
 
 unsigned char PWM = 50;
 
@@ -45,7 +45,7 @@ struct _pid{
 	unsigned char goalTemp[3];
 	unsigned char currentTemp[3];
 	unsigned char Kp, Ki, Kd;
-	unsigned char currentPWM;
+	float currentPWM;
 	float err, errLast;
 	float integral;
 }pid;
@@ -88,9 +88,9 @@ void showMainMenu(void){
 				switch(currentMenu){
 					case 0: showTemperature(FALSE);break;
 					case 1: showMotorTest();break;
-					case 2:	conWithTemp();displayStringInRow("Con-", TRUE);break;
+					case 2:	conWithTemp(FALSE);displayStringInRow("Con-", TRUE);Motor=0;break;
 					case 3: showPAMenu();break;
-					// case 4: conWithPID();displayStringInRow("Con-", TRUE);break;
+					case 4: conWithTemp(TRUE);displayStringInRow("Con-", TRUE);Motor=0;break;
 				}
 				displayStringInRow("    ", FALSE);
 			}
@@ -646,9 +646,10 @@ void timer0(void) interrupt 1 using 3{
 	
 }
 
-void conWithTemp(void){
 	unsigned int i = 0;
+void conWithTemp(unsigned char usingPID){
 	TEMPCONTROLMODE = TRUE;
+	PIDInit();
 	while(1){
 		Key();
 		if (KeyNum == BACK){
@@ -662,7 +663,8 @@ void conWithTemp(void){
 			TEMPCONTROLMODE = FALSE;
 			return;
 		}
-		calcCurrentPWM();
+		if (usingPID)	calcPWMPID();
+		else	calcCurrentPWM();
 		Key();
 		if (KeyNum == BACK){
 			TEMPCONTROLMODE = FALSE;
@@ -930,6 +932,49 @@ unsigned char checkPwd(){
 	return TRUE;
 }
 
+void PIDInit(){
+	pid.errLast = 0;
+	pid.integral = 0;
+}
+
+void calcPWMPID(){
+	unsigned char i;
+	float currentTempFloat, goalTempFloat;
+	readPIDGoalTempFromC16();
+	// PIDInit();
+	goalTempFloat = pid.goalTemp[0] * 10 + (pid.goalTemp[1]-16) + pid.goalTemp[2] * 0.1;
+	pid.Kp = 50;
+	pid.Ki = 0;	// 下次先试试看Ki=0会发生什么 也许能验证对错
+	pid.Kd = 20;
+
+	for (i=0; i<3; i++){
+		pid.currentTemp[i] = temp[i+1];
+	}
+	currentTempFloat = pid.currentTemp[0] * 10 + pid.currentTemp[1] + pid.currentTemp[2] * 0.1;
+
+	pid.err = currentTempFloat - goalTempFloat;
+	// DispBuff[1] = (int)pid.err / 10;
+	// DispBuff[2] = (int)pid.err % 10 + 16;
+	// DispBuff[3] = (pid.err - DispBuff[1]*10 - DispBuff[2] - 16) * 10;
+	// DispBuff[1] = pid.goalTemp[0];
+	// DispBuff[2] = pid.goalTemp[1]-16;
+	// DispBuff[3] = pid.goalTemp[2];
+	// display(DispBuff);
+	// return;
+	// 现在0 和 100 在切换
+
+	if (pid.err < 0){
+		PWM = 0;
+		return;
+	}
+	pid.integral += pid.err;
+	pid.currentPWM = pid.Kp * pid.err + pid.Ki * pid.integral + pid.Kd * (pid.err - pid.errLast);
+	pid.errLast = pid.err;
+	if (pid.currentPWM >= 100)	pid.currentPWM = 100;
+
+	PWM = pid.currentPWM;
+}
+
 void main (void){
   	Init_7279();	// 初始化堆栈    			// 初始化7279
   	DS18B20_Init();
@@ -940,8 +985,5 @@ void main (void){
 	TL0 = timerL;
 	EA = 1;
 	ET0 = 1;
-
-	
-
  	showMainMenu();
 }

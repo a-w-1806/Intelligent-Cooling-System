@@ -75,7 +75,7 @@ U8 DS1820_ReadData();
 void showMotorTest(void);
 void runMotorWithPWM();
 
-void conWithTemp(void);
+void conWithTemp(unsigned char);
 void calcCurrentPWM();
 
 void readRunOptionsFromC16();
@@ -88,5 +88,8 @@ unsigned char checkPwd();
 
 void readPIDGoalTempFromC16();
 void writePIDGoalTempToC16();
+
+void PIDInit();
+void calcPWMPID();
 
 #endif
