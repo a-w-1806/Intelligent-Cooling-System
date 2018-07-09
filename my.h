@@ -20,6 +20,9 @@
 #define U8 unsigned char
 #define U16 unsigned short
 
+#define FOSC    11059200        //振荡频率
+#define BAUD    9600            //波特率
+#define TC_VAL  (256-FOSC/16/12/BAUD)
 
 sbit CS  = P1^4;
 sbit CLK  = P1^5;
@@ -91,5 +94,10 @@ void writePIDGoalTempToC16();
 
 void PIDInit();
 void calcPWMPID();
+
+void UART_ISR(void);
+void InitUART(void);
+void SendOneByte(U8 c);
+void sendTempToComputer();
 
 #endif

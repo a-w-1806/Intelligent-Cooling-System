@@ -38,7 +38,6 @@ unsigned char TEMPCONTROLMODE = FALSE;
 unsigned char KeyFlag = 0;
 
 unsigned char PIDPwd[4] = {0,0,0,0};
-// unsigned char PIDParam[3];
 unsigned char PIDGoalTempAddress = 12;
 
 struct _pid{
@@ -467,7 +466,9 @@ void waitUntilRelease(void){
 
 
 void showTemperature(unsigned char upper){
-	unsigned char i;
+	unsigned char i, count;
+	count = 0;
+	InitUART();
 	while(1){
 		Key();
 		if (KeyNum == BACK) return;
@@ -485,6 +486,11 @@ void showTemperature(unsigned char upper){
 		DS1820_Reset();
 
 		displayTemperature(upper);
+		count++;
+		if (count == 100){
+			sendTempToComputer();
+			count = 0;
+		}
 		Somenop50();
 		if(TEMPCONTROLMODE) break;
 	}
@@ -567,13 +573,11 @@ void showMotorTest(void){
 				currentMenu = changeMenuPtr(currentMenu, FALSE, 10);
 				DispBuff[7] = currentMenu;
 				displayIntInRow(runOptions[currentMenu], FALSE);
-				// displayStringInRow(menuBuffer[currentMenu], FALSE);
 			}
 			else if (KeyNum==UP){
 				currentMenu = changeMenuPtr(currentMenu, TRUE, 10);
 				DispBuff[7] = currentMenu;
 				displayIntInRow(runOptions[currentMenu], FALSE);
-				// displayStringInRow(menuBuffer[currentMenu], FALSE);
 			}
 			else if (KeyNum==ENTER){
 				displayStringInRow("run-", TRUE);
@@ -603,7 +607,6 @@ void runMotorWithPWM(){
 
 	MotorThre = PWM;
 
-	// displayIntInRow(PWM, FALSE);
 	while(1){
 		if (TEMPCONTROLMODE) {
 			for (i=0; i<10; i++){
@@ -858,7 +861,6 @@ void showCurrentPIDGoalTemp(){
 			switch (KeyNum){
 				case BACK: return;
 				case ENTER: flag=TRUE; pid.goalTemp[i-1] = DispBuff[i];break;
-				// case UP: DispBuff[i]=changeMenuPtr(DispBuff[i], TRUE, 10); display(DispBuff);break;
 				case UP:
 					if (i!=2){
 						DispBuff[i]=changeMenuPtr(DispBuff[i], TRUE, 10); 
@@ -880,7 +882,6 @@ void showCurrentPIDGoalTemp(){
 					display(DispBuff);
 					break;
 			}
-			// if (i==2)	DispBuff[i] += 16;
 			if (flag){
 				flag = FALSE;
 				break;
@@ -953,15 +954,6 @@ void calcPWMPID(){
 	currentTempFloat = pid.currentTemp[0] * 10 + pid.currentTemp[1] + pid.currentTemp[2] * 0.1;
 
 	pid.err = currentTempFloat - goalTempFloat;
-	// DispBuff[1] = (int)pid.err / 10;
-	// DispBuff[2] = (int)pid.err % 10 + 16;
-	// DispBuff[3] = (pid.err - DispBuff[1]*10 - DispBuff[2] - 16) * 10;
-	// DispBuff[1] = pid.goalTemp[0];
-	// DispBuff[2] = pid.goalTemp[1]-16;
-	// DispBuff[3] = pid.goalTemp[2];
-	// display(DispBuff);
-	// return;
-	// 现在0 和 100 在切换
 
 	if (pid.err < 0){
 		PWM = 0;
@@ -974,6 +966,47 @@ void calcPWMPID(){
 	else if (pid.currentPWM <= 0) pid.currentPWM = 50;
 
 	PWM = pid.currentPWM;
+}
+
+void UART_ISR(void) interrupt 4
+{
+    U8 RX_Data;
+    //只响应"接收"中断，"发送"中断来了就直接抹掉
+    if(RI)
+   {
+     RI = 0;	//串口中断标志不能自己清除，需要手动清除
+     RX_Data=SBUF;
+     SendOneByte(RX_Data);
+   }
+   else
+     TI = 0;		//串口发中断是发送完缓冲区数据之后产生
+}
+ 
+/****************串口初始化函数*************/
+void InitUART(void)
+{
+    TMOD = 0x20;    //定时器1，模式2工作模式	   
+    SCON = 0x50;    //串口工作模式1，允许REN   /* SCON: 模式 1,  8-bit UART, 使能接收         */
+    TH1 = TC_VAL;
+    TL1 = TH1;
+    PCON = 0x80; 	//发送速率加倍
+    ES = 1;
+    EA = 1;
+    TR1 = 1;
+}
+/**************串口发送字符函数*************/
+void SendOneByte(U8 c)
+{
+    ES = 0;			//禁止中断，让串口安心工作啊
+    SBUF = c;
+    while(!TI);		//等待发送完毕
+    TI = 0;			//清TI中断
+    ES = 1;			//打开中断
+}
+
+void sendTempToComputer(){
+	SendOneByte(temp[1] * 10 + temp[2]);
+	SendOneByte(temp[3] * 10 + temp[4]);
 }
 
 void main (void){
