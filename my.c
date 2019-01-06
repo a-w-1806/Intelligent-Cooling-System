@@ -66,9 +66,9 @@ unsigned char check_LED (char c) {
 	}
 }
 
-void showMainMenu(void) {
-	char* menuBuffer[] = {"tP- ", "run-", "Con-", "PA- ", "P1d-"};
-	unsigned char currentMenu = 0;
+void show_main_menu(void) {
+	char* menu_buffer[] = {"tP- ", "run-", "Con-", "PA- ", "P1d-"};
+	unsigned char current_menu = 0;
 	while(1) {
 		display(DispBuff); //显示（按显缓单元的内容显示）
 		Key();
@@ -76,22 +76,22 @@ void showMainMenu(void) {
 		{   
 		// 有键按下，按照键号执行菜单显示或进入子菜单
 			if (KeyNum == DOWN){
-				currentMenu = changeMenuPtr(currentMenu, FALSE, 5);
-				displayStringInRow(menuBuffer[currentMenu], TRUE);
+				current_menu = change_menu_ptr(current_menu, FALSE, 5);
+				display_string_in_row(menu_buffer[current_menu], TRUE);
 			}
 			else if (KeyNum == UP){
-				currentMenu = changeMenuPtr(currentMenu, TRUE, 5);
-				displayStringInRow(menuBuffer[currentMenu], TRUE);
+				current_menu = change_menu_ptr(current_menu, TRUE, 5);
+				display_string_in_row(menu_buffer[current_menu], TRUE);
 			}
 			else if (KeyNum == ENTER){
-				switch(currentMenu){
-					case 0: showTemperature(FALSE);	break;
-					case 1: showMotorTest(); break;
-					case 2:	conWithTemp(FALSE); displayStringInRow("Con-", TRUE); Motor = 0; break;
-					case 3: showPAMenu(); break;
-					case 4: conWithTemp(TRUE); displayStringInRow("Con-", TRUE); Motor = 0;break;
+				switch(current_menu){
+					case 0: show_temperature(FALSE);	break;
+					case 1: show_motor_test(); break;
+					case 2:	con_with_temp(FALSE); display_string_in_row("Con-", TRUE); Motor = 0; break;
+					case 3: show_PA_menu(); break;
+					case 4: con_with_temp(TRUE); display_string_in_row("Con-", TRUE); Motor = 0;break;
 				}
-				displayStringInRow("    ", FALSE);
+				display_string_in_row("    ", FALSE);
 			}
 		}
   }
@@ -280,7 +280,7 @@ unsigned char receive_byte(void)
        return (in_byte); //返回接收值
 }
 
-void displayStringInRow (char* string, unsigned char upper){
+void display_string_in_row (char* string, unsigned char upper){
 	unsigned char startIndex;
 	unsigned char i;
 	if (upper == TRUE) startIndex = 4;
@@ -297,7 +297,7 @@ void displayIntInRow(unsigned char i, unsigned char upper){
 	unsigned char currentIndex;
 	if (upper == TRUE)	currentIndex = 7;
 	else currentIndex = 3;
-	displayStringInRow("    ", upper);
+	display_string_in_row("    ", upper);
 	if (i==0){
 		DispBuff[currentIndex] = 0;
 		display(DispBuff);
@@ -314,7 +314,7 @@ void displayIntInRow(unsigned char i, unsigned char upper){
 	display(DispBuff);
 }
 
-unsigned char changeMenuPtr(unsigned char current, unsigned char inc, unsigned char volume){
+unsigned char change_menu_ptr(unsigned char current, unsigned char inc, unsigned char volume){
 	if (inc == TRUE){
 		if (current == volume - 1) return 0;
 		else return ++current;
@@ -325,28 +325,28 @@ unsigned char changeMenuPtr(unsigned char current, unsigned char inc, unsigned c
 	}
 }
 
-void showPAMenu(void){
-	char* menuBuffer[] = {" run", " Con", " P1d"};
-	unsigned char currentMenu = 0;
-	displayStringInRow(" run ", FALSE);
+void show_PA_menu(void){
+	char* menu_buffer[] = {" run", " Con", " P1d"};
+	unsigned char current_menu = 0;
+	display_string_in_row(" run ", FALSE);
 	while(1){
 		display(DispBuff); //显示（按显缓单元的内容显示）
 		Key();
 		if(KeyValue!=0xff)
 		{ 
 			if (KeyNum==DOWN){
-				currentMenu = changeMenuPtr(currentMenu, FALSE, 3);
-				displayStringInRow(menuBuffer[currentMenu], FALSE);
+				current_menu = change_menu_ptr(current_menu, FALSE, 3);
+				display_string_in_row(menu_buffer[current_menu], FALSE);
 			}
 			else if (KeyNum==UP){
-				currentMenu = changeMenuPtr(currentMenu, TRUE, 3);
-				displayStringInRow(menuBuffer[currentMenu], FALSE);
+				current_menu = change_menu_ptr(current_menu, TRUE, 3);
+				display_string_in_row(menu_buffer[current_menu], FALSE);
 			}
 			else if (KeyNum==ENTER){
-				switch(currentMenu){
-					case 0: showCurrentRun();displayStringInRow("PA- ", TRUE);displayStringInRow(" run", FALSE); break;
-					case 1: showCurrentTmpThreshould(); displayStringInRow("PA- ", TRUE);displayStringInRow(" Con", FALSE);break;
-					case 2: showCurrentPIDGoalTemp(); displayStringInRow("PA- ", TRUE);displayStringInRow(" P1d", FALSE);break;
+				switch(current_menu){
+					case 0: showCurrentRun();display_string_in_row("PA- ", TRUE);display_string_in_row(" run", FALSE); break;
+					case 1: showCurrentTmpThreshould(); display_string_in_row("PA- ", TRUE);display_string_in_row(" Con", FALSE);break;
+					case 2: showCurrentPIDGoalTemp(); display_string_in_row("PA- ", TRUE);display_string_in_row(" P1d", FALSE);break;
 				}
 			}
 			else if (KeyNum==BACK){
@@ -357,10 +357,10 @@ void showPAMenu(void){
 }
 
 void showCurrentRun(void){
-	unsigned char currentMenu = 0;
+	unsigned char current_menu = 0;
 
 	readRunOptionsFromC16();
-	displayStringInRow("P- 0", TRUE);
+	display_string_in_row("P- 0", TRUE);
 	displayIntInRow(run_options[0], FALSE);
 
 	while (1){
@@ -369,21 +369,21 @@ void showCurrentRun(void){
 		if(KeyValue!=0xff)
 		{ 
 			if (KeyNum==DOWN){
-				currentMenu = changeMenuPtr(currentMenu, FALSE, 10);
-				DispBuff[7] = currentMenu;
-				displayIntInRow(run_options[currentMenu], FALSE);
-				// displayStringInRow(menuBuffer[currentMenu], FALSE);
+				current_menu = change_menu_ptr(current_menu, FALSE, 10);
+				DispBuff[7] = current_menu;
+				displayIntInRow(run_options[current_menu], FALSE);
+				// display_string_in_row(menu_buffer[current_menu], FALSE);
 			}
 			else if (KeyNum==UP){
-				currentMenu = changeMenuPtr(currentMenu, TRUE, 10);
-				DispBuff[7] = currentMenu;
-				displayIntInRow(run_options[currentMenu], FALSE);
-				// displayStringInRow(menuBuffer[currentMenu], FALSE);
+				current_menu = change_menu_ptr(current_menu, TRUE, 10);
+				DispBuff[7] = current_menu;
+				displayIntInRow(run_options[current_menu], FALSE);
+				// display_string_in_row(menu_buffer[current_menu], FALSE);
 			}
 			else if (KeyNum==ENTER){
 				DispBuff[4] = 10;
-				// run_options[currentMenu] = changeNumConti(run_options[currentMenu]);
-				changeNumConti(&run_options[currentMenu]);
+				// run_options[current_menu] = changeNumConti(run_options[current_menu]);
+				changeNumConti(&run_options[current_menu]);
 				writeRunOptionsToC16();
 				waitUntilRelease();
 				DispBuff[4] = 34; // "P"
@@ -398,34 +398,34 @@ void showCurrentRun(void){
 }
 
 void showCurrentTmpThreshould(void){
-	unsigned char currentMenu = 0;
-	char* menuBuffer[2] = {"PA-b", "PA-F"};
+	unsigned char current_menu = 0;
+	char* menu_buffer[2] = {"PA-b", "PA-F"};
 
 	readTempThresholdFromC16();
-	displayStringInRow(menuBuffer[currentMenu], TRUE);
-	displayIntInRow(temp_threshold[currentMenu], FALSE);
+	display_string_in_row(menu_buffer[current_menu], TRUE);
+	displayIntInRow(temp_threshold[current_menu], FALSE);
 
 	while (1){
 		Key();
 		if(KeyValue!=0xff)
 		{ 
 			if (KeyNum==DOWN){
-				currentMenu = changeMenuPtr(currentMenu, FALSE, 2);
-				displayStringInRow(menuBuffer[currentMenu], TRUE);
-				displayIntInRow(temp_threshold[currentMenu], FALSE);
+				current_menu = change_menu_ptr(current_menu, FALSE, 2);
+				display_string_in_row(menu_buffer[current_menu], TRUE);
+				displayIntInRow(temp_threshold[current_menu], FALSE);
 			}
 			else if (KeyNum==UP){
-				currentMenu = changeMenuPtr(currentMenu, TRUE, 2);
-				displayStringInRow(menuBuffer[currentMenu], TRUE);
-				displayIntInRow(temp_threshold[currentMenu], FALSE);
+				current_menu = change_menu_ptr(current_menu, TRUE, 2);
+				display_string_in_row(menu_buffer[current_menu], TRUE);
+				displayIntInRow(temp_threshold[current_menu], FALSE);
 			}
 			
 			else if (KeyNum==ENTER){
 				DispBuff[4] = 10;
 				DispBuff[5] = 39;	// "-"
 				DispBuff[6] = 32;	// " "
-				// temp_threshold[currentMenu] = changeNumConti(temp_threshold[currentMenu]);
-				changeNumConti(&temp_threshold[currentMenu]);
+				// temp_threshold[current_menu] = changeNumConti(temp_threshold[current_menu]);
+				changeNumConti(&temp_threshold[current_menu]);
 				writeTempThresholdToC16();
 				DispBuff[4] = 34; // "P"
 				DispBuff[5] = 10;
@@ -449,8 +449,8 @@ void changeNumConti(unsigned char *num){
 	while (TRUE){
 		Key();
 		switch (KeyNum){
-			case UP: (*num) = changeMenuPtr(*num, TRUE, 100); displayIntInRow(*num, FALSE);break;
-			case DOWN: (*num) = changeMenuPtr(*num, FALSE, 100); displayIntInRow(*num, FALSE);break;
+			case UP: (*num) = change_menu_ptr(*num, TRUE, 100); displayIntInRow(*num, FALSE);break;
+			case DOWN: (*num) = change_menu_ptr(*num, FALSE, 100); displayIntInRow(*num, FALSE);break;
 			case BACK: (*num) = original;displayIntInRow(*num, FALSE);return;
 			case ENTER: return;
 			default: break;
@@ -465,7 +465,7 @@ void waitUntilRelease(void){
 
 
 
-void showTemperature(unsigned char upper){
+void show_temperature(unsigned char upper){
 	unsigned char i, count;
 	count = 0;
 	InitUART();
@@ -557,11 +557,11 @@ void displayTemperature(unsigned char upper){
 	display(DispBuff);
 }
 
-void showMotorTest(void){
-	unsigned char currentMenu = 0;
+void show_motor_test(void){
+	unsigned char current_menu = 0;
 	TEMP_CONTROL_MODE = FALSE;
 	readRunOptionsFromC16();
-	displayStringInRow("r- 0", TRUE);
+	display_string_in_row("r- 0", TRUE);
 	displayIntInRow(run_options[0], FALSE);
 
 	while (1){
@@ -570,24 +570,24 @@ void showMotorTest(void){
 		if(KeyValue!=0xff)
 		{ 
 			if (KeyNum==DOWN){
-				currentMenu = changeMenuPtr(currentMenu, FALSE, 10);
-				DispBuff[7] = currentMenu;
-				displayIntInRow(run_options[currentMenu], FALSE);
+				current_menu = change_menu_ptr(current_menu, FALSE, 10);
+				DispBuff[7] = current_menu;
+				displayIntInRow(run_options[current_menu], FALSE);
 			}
 			else if (KeyNum==UP){
-				currentMenu = changeMenuPtr(currentMenu, TRUE, 10);
-				DispBuff[7] = currentMenu;
-				displayIntInRow(run_options[currentMenu], FALSE);
+				current_menu = change_menu_ptr(current_menu, TRUE, 10);
+				DispBuff[7] = current_menu;
+				displayIntInRow(run_options[current_menu], FALSE);
 			}
 			else if (KeyNum==ENTER){
-				displayStringInRow("run-", TRUE);
-				PWM = run_options[currentMenu];
+				display_string_in_row("run-", TRUE);
+				PWM = run_options[current_menu];
 				runMotorWithPWM();
 				DispBuff[4] = 35;	// r
 				DispBuff[5] = 39;	// -
 				DispBuff[6] = 32;	// space
-				DispBuff[7] = currentMenu;
-				displayIntInRow(run_options[currentMenu], FALSE);
+				DispBuff[7] = current_menu;
+				displayIntInRow(run_options[current_menu], FALSE);
 				waitUntilRelease();
 			}
 			else if (KeyNum==BACK){
@@ -649,7 +649,7 @@ void timer0(void) interrupt 1 using 3{
 	
 }
 
-void conWithTemp(unsigned char usingPID){
+void con_with_temp(unsigned char usingPID){
 	unsigned int i = 0;
 	TEMP_CONTROL_MODE = TRUE;
 	PIDInit();
@@ -659,7 +659,7 @@ void conWithTemp(unsigned char usingPID){
 			TEMP_CONTROL_MODE = FALSE;
 			return;
 		}
-		showTemperature(TRUE);
+		show_temperature(TRUE);
 		if (i%6==0)	displayIntInRow(PWM, FALSE);
 		Key();
 		if (KeyNum == BACK){
@@ -846,7 +846,7 @@ void showCurrentPIDGoalTemp(){
 	unsigned char i;
 	unsigned char flag = checkPwd();
 	if (flag == FALSE)	return;
-	displayStringInRow("A- P", TRUE);
+	display_string_in_row("A- P", TRUE);
 	readPIDGoalTempFromC16();
 	DispBuff[0] = 32;
 	DispBuff[1] = pid.goal_temp[0];
@@ -863,20 +863,20 @@ void showCurrentPIDGoalTemp(){
 				case ENTER: flag=TRUE; pid.goal_temp[i-1] = DispBuff[i];break;
 				case UP:
 					if (i!=2){
-						DispBuff[i]=changeMenuPtr(DispBuff[i], TRUE, 10); 
+						DispBuff[i]=change_menu_ptr(DispBuff[i], TRUE, 10); 
 					}
 					else{
-						DispBuff[i]=changeMenuPtr(DispBuff[i]-16, TRUE, 10);
+						DispBuff[i]=change_menu_ptr(DispBuff[i]-16, TRUE, 10);
 						DispBuff[i] += 16;
 					}
 					display(DispBuff);
 					break;
 				case DOWN:
 					if (i!=2){
-						DispBuff[i]=changeMenuPtr(DispBuff[i], FALSE, 10); 
+						DispBuff[i]=change_menu_ptr(DispBuff[i], FALSE, 10); 
 					}
 					else{
-						DispBuff[i]=changeMenuPtr(DispBuff[i]-16, FALSE, 10);
+						DispBuff[i]=change_menu_ptr(DispBuff[i]-16, FALSE, 10);
 						DispBuff[i] += 16;
 					}
 					display(DispBuff);
@@ -909,16 +909,16 @@ void writePIDGoalTempToC16(){
 unsigned char checkPwd(){
 	unsigned char i;
 	unsigned char flag = FALSE;
-	displayStringInRow("PA55", TRUE);
-	displayStringInRow("0000", FALSE);
+	display_string_in_row("PA55", TRUE);
+	display_string_in_row("0000", FALSE);
 	
 	for(i = 0; i < 4; i++){
 		while(TRUE){
 			Key();
 			switch (KeyNum){
 				case BACK: return FALSE;
-				case UP: DispBuff[i]=changeMenuPtr(DispBuff[i], TRUE, 10); display(DispBuff); break;
-				case DOWN: DispBuff[i]=changeMenuPtr(DispBuff[i], FALSE, 10); display(DispBuff); break;
+				case UP: DispBuff[i]=change_menu_ptr(DispBuff[i], TRUE, 10); display(DispBuff); break;
+				case DOWN: DispBuff[i]=change_menu_ptr(DispBuff[i], FALSE, 10); display(DispBuff); break;
 				case ENTER: flag=TRUE; break;
 			}
 			if (flag){
@@ -1013,11 +1013,11 @@ void main (void){
   	Init_7279();	// 初始化堆栈    			// 初始化7279
   	DS18B20_Init();
 	Motor = 0;
-  	displayStringInRow("tP- ", TRUE);
+  	display_string_in_row("tP- ", TRUE);
 	TMOD = 0x01;
 	TH0 = timerH;
 	TL0 = timerL;
 	EA = 1;
 	ET0 = 1;
- 	showMainMenu();
+ 	show_main_menu();
 }
