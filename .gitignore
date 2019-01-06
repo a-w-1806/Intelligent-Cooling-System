@@ -1,0 +1,12 @@
+aaa
+.vscode
+*.bak
+*.hex
+*.lnp
+*.M51
+*.plg
+*.uvopt
+*.uvproj
+*.LST
+*.OBJ
+*.A51
