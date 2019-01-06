@@ -75,21 +75,27 @@ void show_main_menu(void) {
 		if(KeyValue != 0xff)
 		{   
 		// 有键按下，按照键号执行菜单显示或进入子菜单
-			if (KeyNum == DOWN){
+			if (KeyNum == DOWN) {
 				current_menu = change_menu_ptr(current_menu, FALSE, 5);
 				display_string_in_row(menu_buffer[current_menu], TRUE);
 			}
-			else if (KeyNum == UP){
+			else if (KeyNum == UP) {
 				current_menu = change_menu_ptr(current_menu, TRUE, 5);
 				display_string_in_row(menu_buffer[current_menu], TRUE);
 			}
-			else if (KeyNum == ENTER){
-				switch(current_menu){
-					case 0: show_temperature(FALSE);	break;
+			else if (KeyNum == ENTER) {
+				switch(current_menu) {
+					case 0: show_temperature(FALSE); break;
 					case 1: show_motor_test(); break;
-					case 2:	con_with_temp(FALSE); display_string_in_row("Con-", TRUE); Motor = 0; break;
+					case 2:	con_with_temp(FALSE); 
+							display_string_in_row("Con-", TRUE); 
+							Motor = 0; 
+							break;
 					case 3: show_PA_menu(); break;
-					case 4: con_with_temp(TRUE); display_string_in_row("Con-", TRUE); Motor = 0;break;
+					case 4: con_with_temp(TRUE); 
+							display_string_in_row("Con-", TRUE); 
+							Motor = 0;
+							break;
 				}
 				display_string_in_row("    ", FALSE);
 			}
@@ -285,159 +291,166 @@ unsigned char receive_byte(void)
 //////////////////////////////////////////////////////////////////////////
 
 void display_string_in_row (char* string, unsigned char upper){
-	unsigned char startIndex;
+	unsigned char start_index;
 	unsigned char i;
-	if (upper == TRUE) startIndex = 4;
-	else startIndex = 0;
+	if (upper == TRUE) start_index = 4;
+	else start_index = 0;
 	
-	for (i = 0; i < 4; i++){
-		DispBuff[startIndex+i] = check_LED(string[i]);
+	for (i = 0; i < 4; i++) {
+		DispBuff[start_index+i] = check_LED(string[i]);
 	}
 	display(DispBuff);
 }
 
-void displayIntInRow(unsigned char i, unsigned char upper){
-	unsigned char shang, yu;
-	unsigned char currentIndex;
-	if (upper == TRUE)	currentIndex = 7;
-	else currentIndex = 3;
+void display_int_in_row(unsigned char i, unsigned char upper) {
+	unsigned char quotient, rem;
+	unsigned char current_index;
+	if (upper == TRUE)	current_index = 7;
+	else current_index = 3;
 	display_string_in_row("    ", upper);
-	if (i==0){
-		DispBuff[currentIndex] = 0;
+	if (i == 0) {
+		DispBuff[current_index] = 0;
 		display(DispBuff);
 		return;
 	}
-	while (TRUE){
-		yu = i % 10;
-		shang = i / 10;
-		if (yu == 0 && shang == 0) break;
-		DispBuff[currentIndex] = yu;	//print out yu from right to left
-		currentIndex--;
+	while (TRUE) {
+		rem = i % 10;
+		quotient = i / 10;
+		if (rem == 0 && quotient == 0) break;
+		DispBuff[current_index] = rem;	//print out remainder from right to left
+		current_index--;
 		i /= 10;
 	}
 	display(DispBuff);
 }
 
 unsigned char change_menu_ptr(unsigned char current, unsigned char inc, unsigned char volume){
-	if (inc == TRUE){
+	if (inc == TRUE) {
 		if (current == volume - 1) return 0;
 		else return ++current;
 	}
-	else{
+	else {
 		if (current == 0) return (volume - 1);
 		else return --current;
 	}
 }
 
-void show_PA_menu(void){
+void show_PA_menu(void) {
 	char* menu_buffer[] = {" run", " Con", " P1d"};
 	unsigned char current_menu = 0;
 	display_string_in_row(" run ", FALSE);
-	while(1){
+	while(1) {
 		display(DispBuff); //显示（按显缓单元的内容显示）
 		Key();
-		if(KeyValue!=0xff)
-		{ 
-			if (KeyNum==DOWN){
+		if(KeyValue != 0xff) { 
+			if (KeyNum == DOWN) {
 				current_menu = change_menu_ptr(current_menu, FALSE, 3);
 				display_string_in_row(menu_buffer[current_menu], FALSE);
 			}
-			else if (KeyNum==UP){
+			else if (KeyNum == UP) {
 				current_menu = change_menu_ptr(current_menu, TRUE, 3);
 				display_string_in_row(menu_buffer[current_menu], FALSE);
 			}
-			else if (KeyNum==ENTER){
-				switch(current_menu){
-					case 0: showCurrentRun();display_string_in_row("PA- ", TRUE);display_string_in_row(" run", FALSE); break;
-					case 1: showCurrentTmpThreshould(); display_string_in_row("PA- ", TRUE);display_string_in_row(" Con", FALSE);break;
-					case 2: showCurrentPIDGoalTemp(); display_string_in_row("PA- ", TRUE);display_string_in_row(" P1d", FALSE);break;
+			else if (KeyNum == ENTER) {
+				switch(current_menu) {
+					case 0: show_current_run();
+							display_string_in_row("PA- ", TRUE);
+							display_string_in_row(" run", FALSE);
+							break;
+					case 1: show_current_temp_threshold(); 
+							display_string_in_row("PA- ", TRUE);
+							display_string_in_row(" Con", FALSE);
+							break;
+					case 2: showCurrentPIDGoalTemp();
+							display_string_in_row("PA- ", TRUE);
+							display_string_in_row(" P1d", FALSE);
+							break;
 				}
 			}
-			else if (KeyNum==BACK){
+			else if (KeyNum == BACK) {
 				return;
 			}
 		}
 	}
 }
 
-void showCurrentRun(void){
+void show_current_run(void) {
 	unsigned char current_menu = 0;
 
-	readRunOptionsFromC16();
+	read_run_options_from_C16();
 	display_string_in_row("P- 0", TRUE);
-	displayIntInRow(run_options[0], FALSE);
+	display_int_in_row(run_options[0], FALSE);
 
-	while (1){
+	while (1) {
 		// display(DispBuff); //显示（按显缓单元的内容显示）
 		Key();
-		if(KeyValue!=0xff)
+		if (KeyValue != 0xff)
 		{ 
-			if (KeyNum==DOWN){
+			if (KeyNum == DOWN) {
 				current_menu = change_menu_ptr(current_menu, FALSE, 10);
 				DispBuff[7] = current_menu;
-				displayIntInRow(run_options[current_menu], FALSE);
+				display_int_in_row(run_options[current_menu], FALSE);
 				// display_string_in_row(menu_buffer[current_menu], FALSE);
 			}
-			else if (KeyNum==UP){
+			else if (KeyNum == UP){
 				current_menu = change_menu_ptr(current_menu, TRUE, 10);
 				DispBuff[7] = current_menu;
-				displayIntInRow(run_options[current_menu], FALSE);
+				display_int_in_row(run_options[current_menu], FALSE);
 				// display_string_in_row(menu_buffer[current_menu], FALSE);
 			}
-			else if (KeyNum==ENTER){
+			else if (KeyNum == ENTER){
 				DispBuff[4] = 10;
-				// run_options[current_menu] = changeNumConti(run_options[current_menu]);
-				changeNumConti(&run_options[current_menu]);
-				writeRunOptionsToC16();
-				waitUntilRelease();
+				// run_options[current_menu] = change_num_conti(run_options[current_menu]);
+				change_num_conti(&run_options[current_menu]);
+				write_run_options_to_C16();
+				wait_until_release();
 				DispBuff[4] = 34; // "P"
 				display(DispBuff);
 			}
-			if (KeyNum==BACK){
-				writeRunOptionsToC16();
+			if (KeyNum == BACK){
+				write_run_options_to_C16();
 				return;
 			}
 		}
 	}
 }
 
-void showCurrentTmpThreshould(void){
+void show_current_temp_threshold(void) {
 	unsigned char current_menu = 0;
 	char* menu_buffer[2] = {"PA-b", "PA-F"};
 
-	readTempThresholdFromC16();
+	read_temp_threshold_from_C16();
 	display_string_in_row(menu_buffer[current_menu], TRUE);
-	displayIntInRow(temp_threshold[current_menu], FALSE);
+	display_int_in_row(temp_threshold[current_menu], FALSE);
 
-	while (1){
+	while (1) {
 		Key();
-		if(KeyValue!=0xff)
-		{ 
-			if (KeyNum==DOWN){
+		if (KeyValue != 0xff) { 
+			if (KeyNum == DOWN) {
 				current_menu = change_menu_ptr(current_menu, FALSE, 2);
 				display_string_in_row(menu_buffer[current_menu], TRUE);
-				displayIntInRow(temp_threshold[current_menu], FALSE);
+				display_int_in_row(temp_threshold[current_menu], FALSE);
 			}
-			else if (KeyNum==UP){
+			else if (KeyNum == UP) {
 				current_menu = change_menu_ptr(current_menu, TRUE, 2);
 				display_string_in_row(menu_buffer[current_menu], TRUE);
-				displayIntInRow(temp_threshold[current_menu], FALSE);
+				display_int_in_row(temp_threshold[current_menu], FALSE);
 			}
 			
-			else if (KeyNum==ENTER){
+			else if (KeyNum == ENTER) {
 				DispBuff[4] = 10;
 				DispBuff[5] = 39;	// "-"
 				DispBuff[6] = 32;	// " "
-				// temp_threshold[current_menu] = changeNumConti(temp_threshold[current_menu]);
-				changeNumConti(&temp_threshold[current_menu]);
-				writeTempThresholdToC16();
+				// temp_threshold[current_menu] = change_num_conti(temp_threshold[current_menu]);
+				change_num_conti(&temp_threshold[current_menu]);
+				write_temp_threshold_to_C16();
 				DispBuff[4] = 34; // "P"
 				DispBuff[5] = 10;
 				DispBuff[6] = 39;
 				display(DispBuff);
 			}
-			if (KeyNum==BACK){
-				writeTempThresholdToC16();
+			if (KeyNum == BACK){
+				write_temp_threshold_to_C16();
 				return;
 			}
 		}
@@ -445,35 +458,43 @@ void showCurrentTmpThreshould(void){
 }
 
 
-void changeNumConti(unsigned char *num){
+void change_num_conti(unsigned char *num) {
 	unsigned char original = *num;
 
 	display(DispBuff);
-	waitUntilRelease();
-	while (TRUE){
+	wait_until_release();
+	while (TRUE) {
 		Key();
-		switch (KeyNum){
-			case UP: (*num) = change_menu_ptr(*num, TRUE, 100); displayIntInRow(*num, FALSE);break;
-			case DOWN: (*num) = change_menu_ptr(*num, FALSE, 100); displayIntInRow(*num, FALSE);break;
-			case BACK: (*num) = original;displayIntInRow(*num, FALSE);return;
+		switch (KeyNum) {
+			case UP: (*num) = change_menu_ptr(*num, TRUE, 100); 
+					display_int_in_row(*num, FALSE);
+					break;
+			case DOWN: (*num) = change_menu_ptr(*num, FALSE, 100); 
+					display_int_in_row(*num, FALSE);
+					break;
+			case BACK: (*num) = original;
+					display_int_in_row(*num, FALSE);
+					return;
 			case ENTER: return;
 			default: break;
 		}
 	}
 }
 
-void waitUntilRelease(void){
-	while (KeyNum!=0xff || KeyValue!=0xff){	Key();}
+void wait_until_release(void) {
+	while (KeyNum != 0xff || KeyValue != 0xff) {
+		Key();
+	}
 	return;
 }
 
 
 
-void show_temperature(unsigned char upper){
+void show_temperature(unsigned char upper) {
 	unsigned char i, count;
 	count = 0;
 	InitUART();
-	while(1){
+	while(1) {
 		Key();
 		if (KeyNum == BACK) return;
 		DS1820_Reset();
@@ -484,15 +505,15 @@ void show_temperature(unsigned char upper){
 		DS1820_WriteData(0xcc);
 		DS1820_WriteData(0xbe);
 
-		for (i=0;i<2;i++){
+		for (i = 0; i < 2; i++) {
 			temperature[i] = DS1820_ReadData();
 		}
 		DS1820_Reset();
 
-		displayTemperature(upper);
+		display_temperature(upper);
 		count++;
-		if (count == 100){
-			sendTempToComputer();
+		if (count == 100) {
+			send_temp_to_computer();
 			count = 0;
 		}
 		Somenop50();
@@ -500,25 +521,24 @@ void show_temperature(unsigned char upper){
 	}
 }
 
-void displayTemperature(unsigned char upper){
-	unsigned char startAddress = 0;
+void display_temperature(unsigned char upper) {
+	unsigned char start_address = 0;
 	U8 temp_data,temp_data_2 ;
 	U16 TempDec	;
 
-	if (upper) startAddress = 4;
+	if (upper) start_address = 4;
 	temp_data = temperature[1];
 	temp_data &= 0xf0; //取高4 位
-	if (temp_data==0xf0){ //判断是正温度还是负温度读数
-		DispBuff[startAddress+0]=39;//负温度读数求补,取反加1,判断低8 位是否有进位
-		if (temperature[0]==0){
+	if (temp_data == 0xf0) { //判断是正温度还是负温度读数
+		DispBuff[start_address + 0] = 39;//负温度读数求补,取反加1,判断低8 位是否有进位
+		if (temperature[0] == 0){
 	 //有进位,高8 位取反加1
-		temperature[0]=~temperature[0]+1;
-		temperature[1]=~temperature[1]+1;
-		}
-		else{
+		temperature[0] = ~temperature[0] + 1;
+		temperature[1] = ~temperature[1] + 1;
+		} else {
 		 //没进位,高8 位不加1
-		temperature[0]=~temperature[0]+1;
-		temperature[1]=~temperature[1];
+		temperature[0] = ~temperature[0] + 1;
+		temperature[1] = ~temperature[1];
 		}
 	}
 
@@ -532,30 +552,30 @@ void displayTemperature(unsigned char upper){
 	TempDec = temperature[0]*625;  //625=0.0625* 10000,  表示小数部分，扩大1万倍，方便显示
 	temp[3] = TempDec/1000;  //取小数十分位转换为ASCII码
 	temp[4] = (TempDec%1000)/100;  //取小数百分位转换为ASCII码
-	if(DispBuff[startAddress+0]==39){
+	if(DispBuff[start_address+0]==39){
 		if(temp[0]!=0){
-			DispBuff[startAddress+1]=temp[0];
-			DispBuff[startAddress+2]=temp[1];
-			DispBuff[startAddress+3]=temp[2];
+			DispBuff[start_address+1]=temp[0];
+			DispBuff[start_address+2]=temp[1];
+			DispBuff[start_address+3]=temp[2];
 		}
 		else {
-			DispBuff[startAddress+1]=temp[1];
-			DispBuff[startAddress+2]=temp[2]+16;
-			DispBuff[startAddress+3]=temp[3];
+			DispBuff[start_address+1]=temp[1];
+			DispBuff[start_address+2]=temp[2]+16;
+			DispBuff[start_address+3]=temp[3];
 		}
 	}
 	else{
 		if(temp[0]!=0){
-			DispBuff[startAddress+0]=temp[0];
-			DispBuff[startAddress+1]=temp[1];
-			DispBuff[startAddress+2]=temp[2]+16;
-			DispBuff[startAddress+3]=temp[3];
+			DispBuff[start_address+0]=temp[0];
+			DispBuff[start_address+1]=temp[1];
+			DispBuff[start_address+2]=temp[2]+16;
+			DispBuff[start_address+3]=temp[3];
 		}
 		else {
-			DispBuff[startAddress+0]=temp[1];
-			DispBuff[startAddress+1]=temp[2]+16;
-			DispBuff[startAddress+2]=temp[3];
-			DispBuff[startAddress+3]=temp[4];
+			DispBuff[start_address+0]=temp[1];
+			DispBuff[start_address+1]=temp[2]+16;
+			DispBuff[start_address+2]=temp[3];
+			DispBuff[start_address+3]=temp[4];
 		}
 	}
 	display(DispBuff);
@@ -564,9 +584,9 @@ void displayTemperature(unsigned char upper){
 void show_motor_test(void){
 	unsigned char current_menu = 0;
 	TEMP_CONTROL_MODE = FALSE;
-	readRunOptionsFromC16();
+	read_run_options_from_C16();
 	display_string_in_row("r- 0", TRUE);
-	displayIntInRow(run_options[0], FALSE);
+	display_int_in_row(run_options[0], FALSE);
 
 	while (1){
 		// display(DispBuff); //显示（按显缓单元的内容显示）
@@ -576,12 +596,12 @@ void show_motor_test(void){
 			if (KeyNum==DOWN){
 				current_menu = change_menu_ptr(current_menu, FALSE, 10);
 				DispBuff[7] = current_menu;
-				displayIntInRow(run_options[current_menu], FALSE);
+				display_int_in_row(run_options[current_menu], FALSE);
 			}
 			else if (KeyNum==UP){
 				current_menu = change_menu_ptr(current_menu, TRUE, 10);
 				DispBuff[7] = current_menu;
-				displayIntInRow(run_options[current_menu], FALSE);
+				display_int_in_row(run_options[current_menu], FALSE);
 			}
 			else if (KeyNum==ENTER){
 				display_string_in_row("run-", TRUE);
@@ -591,8 +611,8 @@ void show_motor_test(void){
 				DispBuff[5] = 39;	// -
 				DispBuff[6] = 32;	// space
 				DispBuff[7] = current_menu;
-				displayIntInRow(run_options[current_menu], FALSE);
-				waitUntilRelease();
+				display_int_in_row(run_options[current_menu], FALSE);
+				wait_until_release();
 			}
 			else if (KeyNum==BACK){
 				DispBuff[4] = 35;	// r
@@ -664,7 +684,7 @@ void con_with_temp(unsigned char usingPID){
 			return;
 		}
 		show_temperature(TRUE);
-		if (i%6==0)	displayIntInRow(PWM, FALSE);
+		if (i%6==0)	display_int_in_row(PWM, FALSE);
 		Key();
 		if (KeyNum == BACK){
 			TEMP_CONTROL_MODE = FALSE;
@@ -693,7 +713,7 @@ void calccurrent_PWM(){
 	unsigned char current_temp = 10*temp[1]+temp[2];
 	unsigned int nominator, denom;
 
-	readTempThresholdFromC16();
+	read_temp_threshold_from_C16();
 	nominator = (temp[1]*1000+temp[2]*100+temp[3]*10+temp[4]) - temp_threshold[0]*100;
 	denom = 2 * (temp_threshold[1] - temp_threshold[0]);
 	if (current_temp >= temp_threshold[1]){PWM = 100; return;}
@@ -818,28 +838,28 @@ unsigned char eread_add(unsigned char add)
     return dat;
 }
 
-void readRunOptionsFromC16(){
+void read_run_options_from_C16(){
 	unsigned char i;
 	for(i=0; i<10; i++){
 		run_options[i] = eread_add(run_options_start_address+i);
 	}
 }
 
-void writeRunOptionsToC16(){
+void write_run_options_to_C16(){
 	unsigned char i;
 	for(i=0; i<10; i++){
 		ewrite_add(run_options_start_address+i, run_options[i]);
 	}
 }
 
-void readTempThresholdFromC16(){
+void read_temp_threshold_from_C16(){
 	unsigned char i;
 	for(i=0; i<2; i++){
 		temp_threshold[i] = eread_add(temp_threshold_start_address+i);
 	}
 }
 
-void writeTempThresholdToC16(){
+void write_temp_threshold_to_C16(){
 	unsigned char i;
 	for(i=0; i<2; i++){
 		ewrite_add(temp_threshold_start_address+i, temp_threshold[i]);
@@ -1008,7 +1028,7 @@ void SendOneByte(U8 c)
     ES = 1;			//打开中断
 }
 
-void sendTempToComputer(){
+void send_temp_to_computer(){
 	SendOneByte(temp[1] * 10 + temp[2]);
 	SendOneByte(temp[3] * 10 + temp[4]);
 }
