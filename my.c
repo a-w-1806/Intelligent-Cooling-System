@@ -13,16 +13,16 @@ unsigned char LEDValue[50] = {0xFC,0x44,0x79,0x5D,0xC5,0x9D,0xBD,0x54,0xFD,0xDD,
 unsigned char DispBuff[8] = {32,32,32,32,32,32,32,32};
 unsigned char code KeyTabel[4] = {0x3B, 0x3A, 0x39, 0x38}; // down up back enter
 
-unsigned char runOptions[10];
-unsigned char runOptionsStartAddress = 0;
+unsigned char run_options[10];
+unsigned char run_options_start_address = 0;
 
-unsigned char tempThreshold[2];
-unsigned char tempThresholdStartAddress = 10;
+unsigned char temp_threshold[2];
+unsigned char temp_threshold_start_address = 10;
 
 unsigned char temperature[2];
 
-unsigned char MotorThre;
-unsigned char MotorNow = 0;
+unsigned char motor_thre;
+unsigned char motor_now = 0;
 
 unsigned char timerH = 0xFF;
 unsigned char timerL = 0x00;
@@ -33,23 +33,23 @@ unsigned char temp[5]; // bai shi ge shifen baifen
 
 unsigned char PWM = 50;
 
-unsigned char TEMPCONTROLMODE = FALSE;
+unsigned char TEMP_CONTROL_MODE = FALSE;
 
 unsigned char KeyFlag = 0;
 
 unsigned char PIDPwd[4] = {0,0,0,0};
 unsigned char PIDGoalTempAddress = 12;
 
-struct _pid{
-	unsigned char goalTemp[3];
-	unsigned char currentTemp[3];
+struct _pid {
+	unsigned char goal_temp[3];
+	unsigned char current_temp[3];
 	unsigned char Kp, Ki, Kd;
-	float currentPWM;
-	float err, errLast;
+	float current_PWM;
+	float err, err_last;
 	float integral;
-}pid;
+} pid;
 
-unsigned char checkLED (char c) {
+unsigned char check_LED (char c) {
 	if (c >= '0' && c <= '9') return (c - '0');
 	else if (c >= 'A' && c <= 'F') return (c - 'A' + 10);
 	switch (c) {
@@ -287,7 +287,7 @@ void displayStringInRow (char* string, unsigned char upper){
 	else startIndex = 0;
 	
 	for (i = 0; i < 4; i++){
-		DispBuff[startIndex+i] = checkLED(string[i]);
+		DispBuff[startIndex+i] = check_LED(string[i]);
 	}
 	display(DispBuff);
 }
@@ -361,7 +361,7 @@ void showCurrentRun(void){
 
 	readRunOptionsFromC16();
 	displayStringInRow("P- 0", TRUE);
-	displayIntInRow(runOptions[0], FALSE);
+	displayIntInRow(run_options[0], FALSE);
 
 	while (1){
 		// display(DispBuff); //显示（按显缓单元的内容显示）
@@ -371,19 +371,19 @@ void showCurrentRun(void){
 			if (KeyNum==DOWN){
 				currentMenu = changeMenuPtr(currentMenu, FALSE, 10);
 				DispBuff[7] = currentMenu;
-				displayIntInRow(runOptions[currentMenu], FALSE);
+				displayIntInRow(run_options[currentMenu], FALSE);
 				// displayStringInRow(menuBuffer[currentMenu], FALSE);
 			}
 			else if (KeyNum==UP){
 				currentMenu = changeMenuPtr(currentMenu, TRUE, 10);
 				DispBuff[7] = currentMenu;
-				displayIntInRow(runOptions[currentMenu], FALSE);
+				displayIntInRow(run_options[currentMenu], FALSE);
 				// displayStringInRow(menuBuffer[currentMenu], FALSE);
 			}
 			else if (KeyNum==ENTER){
 				DispBuff[4] = 10;
-				// runOptions[currentMenu] = changeNumConti(runOptions[currentMenu]);
-				changeNumConti(&runOptions[currentMenu]);
+				// run_options[currentMenu] = changeNumConti(run_options[currentMenu]);
+				changeNumConti(&run_options[currentMenu]);
 				writeRunOptionsToC16();
 				waitUntilRelease();
 				DispBuff[4] = 34; // "P"
@@ -403,7 +403,7 @@ void showCurrentTmpThreshould(void){
 
 	readTempThresholdFromC16();
 	displayStringInRow(menuBuffer[currentMenu], TRUE);
-	displayIntInRow(tempThreshold[currentMenu], FALSE);
+	displayIntInRow(temp_threshold[currentMenu], FALSE);
 
 	while (1){
 		Key();
@@ -412,20 +412,20 @@ void showCurrentTmpThreshould(void){
 			if (KeyNum==DOWN){
 				currentMenu = changeMenuPtr(currentMenu, FALSE, 2);
 				displayStringInRow(menuBuffer[currentMenu], TRUE);
-				displayIntInRow(tempThreshold[currentMenu], FALSE);
+				displayIntInRow(temp_threshold[currentMenu], FALSE);
 			}
 			else if (KeyNum==UP){
 				currentMenu = changeMenuPtr(currentMenu, TRUE, 2);
 				displayStringInRow(menuBuffer[currentMenu], TRUE);
-				displayIntInRow(tempThreshold[currentMenu], FALSE);
+				displayIntInRow(temp_threshold[currentMenu], FALSE);
 			}
 			
 			else if (KeyNum==ENTER){
 				DispBuff[4] = 10;
 				DispBuff[5] = 39;	// "-"
 				DispBuff[6] = 32;	// " "
-				// tempThreshold[currentMenu] = changeNumConti(tempThreshold[currentMenu]);
-				changeNumConti(&tempThreshold[currentMenu]);
+				// temp_threshold[currentMenu] = changeNumConti(temp_threshold[currentMenu]);
+				changeNumConti(&temp_threshold[currentMenu]);
 				writeTempThresholdToC16();
 				DispBuff[4] = 34; // "P"
 				DispBuff[5] = 10;
@@ -492,7 +492,7 @@ void showTemperature(unsigned char upper){
 			count = 0;
 		}
 		Somenop50();
-		if(TEMPCONTROLMODE) break;
+		if(TEMP_CONTROL_MODE) break;
 	}
 }
 
@@ -559,10 +559,10 @@ void displayTemperature(unsigned char upper){
 
 void showMotorTest(void){
 	unsigned char currentMenu = 0;
-	TEMPCONTROLMODE = FALSE;
+	TEMP_CONTROL_MODE = FALSE;
 	readRunOptionsFromC16();
 	displayStringInRow("r- 0", TRUE);
-	displayIntInRow(runOptions[0], FALSE);
+	displayIntInRow(run_options[0], FALSE);
 
 	while (1){
 		// display(DispBuff); //显示（按显缓单元的内容显示）
@@ -572,22 +572,22 @@ void showMotorTest(void){
 			if (KeyNum==DOWN){
 				currentMenu = changeMenuPtr(currentMenu, FALSE, 10);
 				DispBuff[7] = currentMenu;
-				displayIntInRow(runOptions[currentMenu], FALSE);
+				displayIntInRow(run_options[currentMenu], FALSE);
 			}
 			else if (KeyNum==UP){
 				currentMenu = changeMenuPtr(currentMenu, TRUE, 10);
 				DispBuff[7] = currentMenu;
-				displayIntInRow(runOptions[currentMenu], FALSE);
+				displayIntInRow(run_options[currentMenu], FALSE);
 			}
 			else if (KeyNum==ENTER){
 				displayStringInRow("run-", TRUE);
-				PWM = runOptions[currentMenu];
+				PWM = run_options[currentMenu];
 				runMotorWithPWM();
 				DispBuff[4] = 35;	// r
 				DispBuff[5] = 39;	// -
 				DispBuff[6] = 32;	// space
 				DispBuff[7] = currentMenu;
-				displayIntInRow(runOptions[currentMenu], FALSE);
+				displayIntInRow(run_options[currentMenu], FALSE);
 				waitUntilRelease();
 			}
 			else if (KeyNum==BACK){
@@ -605,10 +605,10 @@ void showMotorTest(void){
 void runMotorWithPWM(){
 	unsigned char i;
 
-	MotorThre = PWM;
+	motor_thre = PWM;
 
 	while(1){
-		if (TEMPCONTROLMODE) {
+		if (TEMP_CONTROL_MODE) {
 			for (i=0; i<10; i++){
 				TR0 = 1;
 				while (TR0 == 1);
@@ -632,51 +632,51 @@ void timer0(void) interrupt 1 using 3{
 	TH0 = timerH;
 	TL0 = timerL;
 
-	if (MotorNow < MotorThre){
+	if (motor_now < motor_thre){
 		Motor = 1;
-		MotorNow++;
+		motor_now++;
 		P2 = 0x00;
 	}
-	else if (MotorNow < 100) {
+	else if (motor_now < 100) {
 		Motor = 0;
-		MotorNow++;
+		motor_now++;
 		P2 = 0x02;
 	}
 	else {
-		MotorNow = 0;
-		if (TEMPCONTROLMODE)	TR0 = 0;
+		motor_now = 0;
+		if (TEMP_CONTROL_MODE)	TR0 = 0;
 	}
 	
 }
 
 void conWithTemp(unsigned char usingPID){
 	unsigned int i = 0;
-	TEMPCONTROLMODE = TRUE;
+	TEMP_CONTROL_MODE = TRUE;
 	PIDInit();
 	while(1){
 		Key();
 		if (KeyNum == BACK){
-			TEMPCONTROLMODE = FALSE;
+			TEMP_CONTROL_MODE = FALSE;
 			return;
 		}
 		showTemperature(TRUE);
 		if (i%6==0)	displayIntInRow(PWM, FALSE);
 		Key();
 		if (KeyNum == BACK){
-			TEMPCONTROLMODE = FALSE;
+			TEMP_CONTROL_MODE = FALSE;
 			return;
 		}
 		if (usingPID)	calcPWMPID();
-		else	calcCurrentPWM();
+		else	calccurrent_PWM();
 		Key();
 		if (KeyNum == BACK){
-			TEMPCONTROLMODE = FALSE;
+			TEMP_CONTROL_MODE = FALSE;
 			return;
 		}
 		runMotorWithPWM();
 		Key();
 		if (KeyNum == BACK){
-			TEMPCONTROLMODE = FALSE;
+			TEMP_CONTROL_MODE = FALSE;
 			return;
 		}
 		i++;
@@ -684,16 +684,16 @@ void conWithTemp(unsigned char usingPID){
 	}
 }
 
-void calcCurrentPWM(){
+void calccurrent_PWM(){
 	// Now we have temp[]. We have to change PWM.
-	unsigned char currentTemp = 10*temp[1]+temp[2];
+	unsigned char current_temp = 10*temp[1]+temp[2];
 	unsigned int nominator, denom;
 
 	readTempThresholdFromC16();
-	nominator = (temp[1]*1000+temp[2]*100+temp[3]*10+temp[4]) - tempThreshold[0]*100;
-	denom = 2 * (tempThreshold[1] - tempThreshold[0]);
-	if (currentTemp >= tempThreshold[1]){PWM = 100; return;}
-	else if (currentTemp < tempThreshold[0]) {PWM = 0; return;}
+	nominator = (temp[1]*1000+temp[2]*100+temp[3]*10+temp[4]) - temp_threshold[0]*100;
+	denom = 2 * (temp_threshold[1] - temp_threshold[0]);
+	if (current_temp >= temp_threshold[1]){PWM = 100; return;}
+	else if (current_temp < temp_threshold[0]) {PWM = 0; return;}
 
 	PWM = nominator / denom + 50;
 }
@@ -817,28 +817,28 @@ unsigned char eread_add(unsigned char add)
 void readRunOptionsFromC16(){
 	unsigned char i;
 	for(i=0; i<10; i++){
-		runOptions[i] = eread_add(runOptionsStartAddress+i);
+		run_options[i] = eread_add(run_options_start_address+i);
 	}
 }
 
 void writeRunOptionsToC16(){
 	unsigned char i;
 	for(i=0; i<10; i++){
-		ewrite_add(runOptionsStartAddress+i, runOptions[i]);
+		ewrite_add(run_options_start_address+i, run_options[i]);
 	}
 }
 
 void readTempThresholdFromC16(){
 	unsigned char i;
 	for(i=0; i<2; i++){
-		tempThreshold[i] = eread_add(tempThresholdStartAddress+i);
+		temp_threshold[i] = eread_add(temp_threshold_start_address+i);
 	}
 }
 
 void writeTempThresholdToC16(){
 	unsigned char i;
 	for(i=0; i<2; i++){
-		ewrite_add(tempThresholdStartAddress+i, tempThreshold[i]);
+		ewrite_add(temp_threshold_start_address+i, temp_threshold[i]);
 	}
 }
 
@@ -849,9 +849,9 @@ void showCurrentPIDGoalTemp(){
 	displayStringInRow("A- P", TRUE);
 	readPIDGoalTempFromC16();
 	DispBuff[0] = 32;
-	DispBuff[1] = pid.goalTemp[0];
-	DispBuff[2] = pid.goalTemp[1];
-	DispBuff[3] = pid.goalTemp[2];
+	DispBuff[1] = pid.goal_temp[0];
+	DispBuff[2] = pid.goal_temp[1];
+	DispBuff[3] = pid.goal_temp[2];
 	display(DispBuff);
 
 	flag = FALSE;
@@ -860,7 +860,7 @@ void showCurrentPIDGoalTemp(){
 			Key();
 			switch (KeyNum){
 				case BACK: return;
-				case ENTER: flag=TRUE; pid.goalTemp[i-1] = DispBuff[i];break;
+				case ENTER: flag=TRUE; pid.goal_temp[i-1] = DispBuff[i];break;
 				case UP:
 					if (i!=2){
 						DispBuff[i]=changeMenuPtr(DispBuff[i], TRUE, 10); 
@@ -894,15 +894,15 @@ void showCurrentPIDGoalTemp(){
 void readPIDGoalTempFromC16(){
 	unsigned char i;
 	for(i=0; i<3; i++){
-		pid.goalTemp[i] = eread_add(PIDGoalTempAddress+i);
-		if (pid.goalTemp[i] >= 10 && i != 1)	pid.goalTemp[i] = 0;
+		pid.goal_temp[i] = eread_add(PIDGoalTempAddress+i);
+		if (pid.goal_temp[i] >= 10 && i != 1)	pid.goal_temp[i] = 0;
 	}
 }
 
 void writePIDGoalTempToC16(){
 	unsigned char i;
 	for(i=0; i<3; i++){
-		ewrite_add(PIDGoalTempAddress+i, pid.goalTemp[i]);
+		ewrite_add(PIDGoalTempAddress+i, pid.goal_temp[i]);
 	}
 }
 
@@ -934,38 +934,38 @@ unsigned char checkPwd(){
 }
 
 void PIDInit(){
-	pid.errLast = 0;
+	pid.err_last = 0;
 	pid.integral = 0;
 }
 
 void calcPWMPID(){
 	unsigned char i;
-	float currentTempFloat, goalTempFloat;
+	float current_tempFloat, goalTempFloat;
 	readPIDGoalTempFromC16();
 	// PIDInit();
-	goalTempFloat = pid.goalTemp[0] * 10 + (pid.goalTemp[1]-16) + pid.goalTemp[2] * 0.1;
+	goalTempFloat = pid.goal_temp[0] * 10 + (pid.goal_temp[1]-16) + pid.goal_temp[2] * 0.1;
 	pid.Kp = 50;
 	pid.Ki = 0;	// 下次先试试看Ki=0会发生什么 也许能验证对错
 	pid.Kd = 20;
 
 	for (i=0; i<3; i++){
-		pid.currentTemp[i] = temp[i+1];
+		pid.current_temp[i] = temp[i+1];
 	}
-	currentTempFloat = pid.currentTemp[0] * 10 + pid.currentTemp[1] + pid.currentTemp[2] * 0.1;
+	current_tempFloat = pid.current_temp[0] * 10 + pid.current_temp[1] + pid.current_temp[2] * 0.1;
 
-	pid.err = currentTempFloat - goalTempFloat;
+	pid.err = current_tempFloat - goalTempFloat;
 
 	if (pid.err < 0){
 		PWM = 0;
 		return;
 	}
 	pid.integral += pid.err;
-	pid.currentPWM = pid.Kp * pid.err + pid.Ki * pid.integral + pid.Kd * (pid.err - pid.errLast) + 50;
-	pid.errLast = pid.err;
-	if (pid.currentPWM >= 100)	pid.currentPWM = 100;
-	else if (pid.currentPWM <= 0) pid.currentPWM = 50;
+	pid.current_PWM = pid.Kp * pid.err + pid.Ki * pid.integral + pid.Kd * (pid.err - pid.err_last) + 50;
+	pid.err_last = pid.err;
+	if (pid.current_PWM >= 100)	pid.current_PWM = 100;
+	else if (pid.current_PWM <= 0) pid.current_PWM = 50;
 
-	PWM = pid.currentPWM;
+	PWM = pid.current_PWM;
 }
 
 void UART_ISR(void) interrupt 4
