@@ -72,18 +72,15 @@ void show_main_menu(void) {
 	while(1) {
 		display(DispBuff); //显示（按显缓单元的内容显示）
 		Key();
-		if(KeyValue != 0xff)
-		{   
+		if (KeyValue != 0xff) {   
 		// 有键按下，按照键号执行菜单显示或进入子菜单
 			if (KeyNum == DOWN) {
 				current_menu = change_menu_ptr(current_menu, FALSE, 5);
 				display_string_in_row(menu_buffer[current_menu], TRUE);
-			}
-			else if (KeyNum == UP) {
+			} else if (KeyNum == UP) {
 				current_menu = change_menu_ptr(current_menu, TRUE, 5);
 				display_string_in_row(menu_buffer[current_menu], TRUE);
-			}
-			else if (KeyNum == ENTER) {
+			} else if (KeyNum == ENTER) {
 				switch(current_menu) {
 					case 0: show_temperature(FALSE); break;
 					case 1: show_motor_test(); break;
