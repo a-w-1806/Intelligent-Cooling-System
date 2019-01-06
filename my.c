@@ -392,13 +392,13 @@ void show_current_run(void) {
 				display_int_in_row(run_options[current_menu], FALSE);
 				// display_string_in_row(menu_buffer[current_menu], FALSE);
 			}
-			else if (KeyNum == UP){
+			else if (KeyNum == UP) {
 				current_menu = change_menu_ptr(current_menu, TRUE, 10);
 				DispBuff[7] = current_menu;
 				display_int_in_row(run_options[current_menu], FALSE);
 				// display_string_in_row(menu_buffer[current_menu], FALSE);
 			}
-			else if (KeyNum == ENTER){
+			else if (KeyNum == ENTER) {
 				DispBuff[4] = 10;
 				// run_options[current_menu] = change_num_conti(run_options[current_menu]);
 				change_num_conti(&run_options[current_menu]);
