@@ -49,10 +49,10 @@ struct _pid{
 	float integral;
 }pid;
 
-unsigned char checkLED (char c){
-	if (c >= '0' && c <= '9') return (c-'0');
-	else if (c >= 'A' && c <= 'F') return (c-'A'+10);
-	switch (c){
+unsigned char checkLED (char c) {
+	if (c >= '0' && c <= '9') return (c - '0');
+	else if (c >= 'A' && c <= 'F') return (c - 'A' + 10);
+	switch (c) {
 		case ' ': return 32;
 		case 't': return 33;
 		case 'P': return 34;
@@ -66,30 +66,30 @@ unsigned char checkLED (char c){
 	}
 }
 
-void showMainMenu(void){
+void showMainMenu(void) {
 	char* menuBuffer[] = {"tP- ", "run-", "Con-", "PA- ", "P1d-"};
 	unsigned char currentMenu = 0;
-	while(1){
+	while(1) {
 		display(DispBuff); //显示（按显缓单元的内容显示）
 		Key();
-		if(KeyValue!=0xff)
+		if(KeyValue != 0xff)
 		{   
 		// 有键按下，按照键号执行菜单显示或进入子菜单
-			if (KeyNum==DOWN){
+			if (KeyNum == DOWN){
 				currentMenu = changeMenuPtr(currentMenu, FALSE, 5);
 				displayStringInRow(menuBuffer[currentMenu], TRUE);
 			}
-			else if (KeyNum==UP){
+			else if (KeyNum == UP){
 				currentMenu = changeMenuPtr(currentMenu, TRUE, 5);
 				displayStringInRow(menuBuffer[currentMenu], TRUE);
 			}
-			else if (KeyNum==ENTER){
+			else if (KeyNum == ENTER){
 				switch(currentMenu){
-					case 0: showTemperature(FALSE);break;
-					case 1: showMotorTest();break;
-					case 2:	conWithTemp(FALSE);displayStringInRow("Con-", TRUE);Motor=0;break;
-					case 3: showPAMenu();break;
-					case 4: conWithTemp(TRUE);displayStringInRow("Con-", TRUE);Motor=0;break;
+					case 0: showTemperature(FALSE);	break;
+					case 1: showMotorTest(); break;
+					case 2:	conWithTemp(FALSE); displayStringInRow("Con-", TRUE); Motor = 0; break;
+					case 3: showPAMenu(); break;
+					case 4: conWithTemp(TRUE); displayStringInRow("Con-", TRUE); Motor = 0;break;
 				}
 				displayStringInRow("    ", FALSE);
 			}
