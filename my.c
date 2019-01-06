@@ -97,6 +97,8 @@ void show_main_menu(void) {
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 void DS18B20_Init()
 {
 	DS1820_Reset();
@@ -279,6 +281,8 @@ unsigned char receive_byte(void)
        DATA=0;
        return (in_byte); //返回接收值
 }
+
+//////////////////////////////////////////////////////////////////////////
 
 void display_string_in_row (char* string, unsigned char upper){
 	unsigned char startIndex;
