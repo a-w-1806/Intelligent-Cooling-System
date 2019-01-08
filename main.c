@@ -35,7 +35,7 @@ unsigned char LEDValue[50] = {0xFC,0x44,0x79,0x5D,0xC5,0x9D,0xBD,0x54,0xFD,0xDD,
 	                        0x00,0xA9,0xF1,0x21,0x2C,0x25,0x2D,0x01}; // 32null，33t，34P,35r,36u,37n,38o,39-
   
 unsigned char DispBuff[8] = {32,32,32,32,32,32,32,32};
-unsigned char code KeyTabel[4] = {0x3B, 0x3A, 0x39, 0x38}; // down up back enter
+unsigned char KeyTable[4] = {0x3B, 0x3A, 0x39, 0x38}; // down up back enter
 
 unsigned char run_options[10];
 unsigned char run_options_start_address = 0;
@@ -251,7 +251,7 @@ void display(unsigned char buff[])
       else{
 		KeyValue = temp;  
 		for(i=0;i<=3;i++)
-			if (KeyValue == KeyTabel[i])
+			if (KeyValue == KeyTable[i])
 			{ KeyNum = i; break; }	
       }
 
