@@ -78,7 +78,7 @@ struct _pid {
 } pid;
 
 void main (void) {
-  	Init_7279();	// 初始化堆栈    			// 初始化7279
+  	Init_7279();
   	DS18B20_Init();
 	Motor = 0;
   	display_string_in_row("tP- ", TRUE);
