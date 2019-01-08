@@ -1,5 +1,5 @@
 #include <REG52.H>                
-#include "my.h"
+#include "main.h"
 
 #include <stdio.h>                
 #include <math.h>
@@ -358,7 +358,7 @@ void show_PA_menu(void) {
 							display_string_in_row("PA- ", TRUE);
 							display_string_in_row(" Con", FALSE);
 							break;
-					case 2: showCurrentPIDGoalTemp();
+					case 2: show_current_PID_goal_temp();
 							display_string_in_row("PA- ", TRUE);
 							display_string_in_row(" P1d", FALSE);
 							break;
@@ -597,7 +597,7 @@ void show_motor_test(void) {
 			} else if (KeyNum == ENTER) {
 				display_string_in_row("run-", TRUE);
 				PWM = run_options[current_menu];
-				runMotorWithPWM();
+				run_motor_with_PWM();
 				DispBuff[4] = 35;	// r
 				DispBuff[5] = 39;	// -
 				DispBuff[6] = 32;	// space
@@ -616,7 +616,7 @@ void show_motor_test(void) {
 }
 
 
-void runMotorWithPWM() {
+void run_motor_with_PWM() {
 	unsigned char i;
 
 	motor_thre = PWM;
@@ -679,14 +679,14 @@ void con_with_temp(unsigned char usingPID) {
 			TEMP_CONTROL_MODE = FALSE;
 			return;
 		}
-		if (usingPID)	calcPWMPID();
+		if (usingPID)	calc_PWM_PID();
 		else	calc_current_PWM();
 		Key();
 		if (KeyNum == BACK){
 			TEMP_CONTROL_MODE = FALSE;
 			return;
 		}
-		runMotorWithPWM();
+		run_motor_with_PWM();
 		Key();
 		if (KeyNum == BACK){
 			TEMP_CONTROL_MODE = FALSE;
@@ -859,12 +859,12 @@ void write_temp_threshold_to_C16() {
 	}
 }
 
-void showCurrentPIDGoalTemp() {
+void show_current_PID_goal_temp() {
 	unsigned char i;
-	unsigned char flag = checkPwd();
+	unsigned char flag = check_pwd();
 	if (flag == FALSE)	return;
 	display_string_in_row("A- P", TRUE);
-	readPIDGoalTempFromC16();
+	read_PID_goal_temp_from_C16();
 	DispBuff[0] = 32;
 	DispBuff[1] = pid.goal_temp[0];
 	DispBuff[2] = pid.goal_temp[1];
@@ -905,11 +905,11 @@ void showCurrentPIDGoalTemp() {
 				break;
 			}
 		}
-		writePIDGoalTempToC16();
+		write_PID_goal_temp_to_C16();
 	}
 }
 
-void readPIDGoalTempFromC16() {
+void read_PID_goal_temp_from_C16() {
 	unsigned char i;
 	for(i = 0; i < 3; i++) {
 		pid.goal_temp[i] = eread_add(PIDGoalTempAddress+i);
@@ -917,14 +917,14 @@ void readPIDGoalTempFromC16() {
 	}
 }
 
-void writePIDGoalTempToC16() {
+void write_PID_goal_temp_to_C16() {
 	unsigned char i;
 	for(i = 0; i < 3; i++) {
 		ewrite_add(PIDGoalTempAddress+i, pid.goal_temp[i]);
 	}
 }
 
-unsigned char checkPwd() {
+unsigned char check_pwd() {
 	unsigned char i;
 	unsigned char flag = FALSE;
 	display_string_in_row("PA55", TRUE);
@@ -961,10 +961,10 @@ void PIDInit() {
 	pid.integral = 0;
 }
 
-void calcPWMPID() {
+void calc_PWM_PID() {
 	unsigned char i;
 	float current_tempFloat, goalTempFloat;
-	readPIDGoalTempFromC16();
+	read_PID_goal_temp_from_C16();
 	// PIDInit();
 	goalTempFloat = pid.goal_temp[0] * 10 + (pid.goal_temp[1]-16) + pid.goal_temp[2] * 0.1;
 	pid.Kp = 50;
