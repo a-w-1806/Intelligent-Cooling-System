@@ -108,6 +108,7 @@ unsigned char check_LED (char c) {
 		case '-': return 39;
 		case 'b': return 11;
 		case 'd': return 13;
+		default: return -1;
 	}
 }
 
@@ -340,7 +341,7 @@ unsigned char receive_byte(void)
 	if upper is TRUE, the string will be displayed on the top layer, otherwise
 	lower layer.
 */
-void display_string_in_row (char* string, unsigned char upper){
+void display_string_in_row(char* string, unsigned char upper) {
 	unsigned char start_index;
 	unsigned char i;
 	if (upper == TRUE) start_index = 4;
