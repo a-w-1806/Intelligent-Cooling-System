@@ -22,12 +22,12 @@ Cooling Fan
 Power
 */
 
-#include <REG52.H>                
+#include <REG52.H>	/* Special function register declarations */             
 #include "main.h"
 
 #include <stdio.h>                
 #include <math.h>
-#include <intrins.h>
+#include <intrins.h>	/* _nop_ */
 #include <string.h>
 
 unsigned char LEDValue[50] = {0xFC,0x44,0x79,0x5D,0xC5,0x9D,0xBD,0x54,0xFD,0xDD,0xF5,0xAD,0xB8,0x6D,0xB9,0xB1, //0-F
