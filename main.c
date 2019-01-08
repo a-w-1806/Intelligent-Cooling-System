@@ -90,6 +90,10 @@ void main (void) {
  	show_main_menu();
 }
 
+/*	Look up function of a character.
+	@param A character to display.
+	@return The index of this character in the LEDValue array.
+*/
 unsigned char check_LED (char c) {
 	if (c >= '0' && c <= '9') return (c - '0');
 	else if (c >= 'A' && c <= 'F') return (c - 'A' + 10);
