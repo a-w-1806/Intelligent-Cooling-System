@@ -2,13 +2,24 @@
 @author
 Yuchen Wang
 
-@processor
+@Processor
 STC89C52: 8-bit Microcontroller
 	ROM: 8K bytes flash
 	RAM: 256 bytes, so we need two hex numbers for addressing.
 
-@chip
+@Chip
 HD7279A: used to connect to LED and keyboard.
+
+@Temperature_Sensor
+DS18B20
+
+@Memory
+24C16: A 16K E2PROM (Electrically Erasable Programmable Read-Only Memory)
+	It can store data even without electriciy, which is different from RAM.
+
+@Other
+Cooling Fan
+Power
 */
 
 #include <REG52.H>                
