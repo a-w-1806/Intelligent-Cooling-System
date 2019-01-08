@@ -112,18 +112,21 @@ unsigned char check_LED (char c) {
 }
 
 void show_main_menu(void) {
+	/* All the functions we provide */
 	char* menu_buffer[] = {"tP- ", "run-", "Con-", "PA- ", "P1d-"};
+	int num_functions = 5;
+	/* The index of the current selected menu in the menu_buffer */
 	unsigned char current_menu = 0;
 	while(1) {
-		display(DispBuff); //显示（按显缓单元的内容显示）
+		display(DispBuff);
 		Key();
 		if (KeyValue != 0xff) {   
 		// 有键按下，按照键号执行菜单显示或进入子菜单
 			if (KeyNum == DOWN) {
-				current_menu = change_menu_ptr(current_menu, FALSE, 5);
+				current_menu = change_menu_ptr(current_menu, FALSE, num_functions);
 				display_string_in_row(menu_buffer[current_menu], TRUE);
 			} else if (KeyNum == UP) {
-				current_menu = change_menu_ptr(current_menu, TRUE, 5);
+				current_menu = change_menu_ptr(current_menu, TRUE, num_functions);
 				display_string_in_row(menu_buffer[current_menu], TRUE);
 			} else if (KeyNum == ENTER) {
 				switch(current_menu) {
@@ -139,6 +142,7 @@ void show_main_menu(void) {
 							Motor = 0;
 							break;
 				}
+				/* Clear the LEDs. */
 				display_string_in_row("    ", FALSE);
 			}
 		}
