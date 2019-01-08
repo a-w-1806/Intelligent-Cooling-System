@@ -1,11 +1,6 @@
 #ifndef MAINH
 #define MAINH
 
-#define Somenop();       _nop_();_nop_();_nop_();_nop_();_nop_();
-#define Somenop10();	 Somenop();Somenop();
-#define Somenop25();	 Somenop();Somenop();Somenop();Somenop();Somenop();
-#define Somenop50();	 Somenop25();Somenop25();
-#define CMD_RESET 0xA4
 #define PIDA 12 
 #define PIDB 10
 #define DOWN 0x00
@@ -24,9 +19,6 @@
 #define BAUD    9600            //波特率
 #define TC_VAL  (256-FOSC/16/12/BAUD)
 
-sbit CS  = P1^4;
-sbit CLK  = P1^5;
-sbit DATA = P1^7;
 sbit DS1820_DQ = P1^3;
 // extern DS1820_DQ
 sbit Motor  = P1^2;
@@ -48,14 +40,9 @@ unsigned char rNum, bFNwum, NowEPVal, LastVal;
 int  NowEPVal1, LastVal1;
 unsigned int  KeyCount1, KeyCount2;
 unsigned char PAStep;
-void Init_7279(void) ;
-void send_byte (unsigned char) ;
 void delay (unsigned char);
-void write_7279 (unsigned char,unsigned char); 
 void display (unsigned char buff[]);
 void Key(void);
-unsigned char receive_byte (void);
-unsigned char ReadKey (void);
 void display_string_in_row (char* string, unsigned char upper);
 unsigned char change_menu_ptr(unsigned char current, unsigned char inc, unsigned char volume);
 

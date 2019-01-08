@@ -25,11 +25,11 @@ Power
 #include <REG52.H>	/* Special function register declarations */             
 #include <intrins.h>	/* _nop_ */
 
+#include "HD7279A.h"
 #include "main.h"
 
 #include <stdio.h>                
 #include <math.h>
-#include <intrins.h>	/* _nop_ */
 #include <string.h>
 
 unsigned char LEDValue[50] = {0xFC,0x44,0x79,0x5D,0xC5,0x9D,0xBD,0x54,0xFD,0xDD,0xF5,0xAD,0xB8,0x6D,0xB9,0xB1, //0-F
@@ -222,41 +222,12 @@ U8 DS1820_ReadData()
     return (TmepData);//返回读到的数据
 }
 
-void Init_7279(void)
-{
-     CS = 0;  			        // 片选使能置0
-     Somenop50();Somenop50();    // 延时
-     send_byte(CMD_RESET);          // 7279复位命令
-                                  // CMD_RESET=A4H 
-     Somenop50();Somenop50();  // 再延时
-     CS = 1;   	   // 片选使能置1，完成初始化
-}
-
 /*	Refresh the LEDs to show the digits in buff. */
 void display(unsigned char buff[]) {
   unsigned char i;
   for(i = 0; i < 8; i++)
     write_7279(0x90+i, LEDValue[buff[i]]);	 
 }
-
-
-
-
-
- unsigned char ReadKey(void)
-{
-   unsigned char readkey;
-   CS = 0;
-   Somenop50();Somenop50();
-   send_byte(0x15);		  //读键值命令15H
-   Somenop25();Somenop25();
-   readkey = receive_byte(); 	  //接收键值(按时序接收)
-   CS = 1;
-   return(readkey);		  //返回键值
-}
-
-
-
 
  void Key(void)
 {
@@ -282,57 +253,6 @@ void display(unsigned char buff[]) {
       }
 
    }	
-}
-
-
-void write_7279(unsigned char cmd, unsigned char dat) 
-{
-     CS = 0;
-     Somenop50();Somenop();
-     send_byte(cmd);           // 写指令
-     Somenop25();Somenop();
-     send_byte(dat);        // 写数据
-     Somenop();Somenop();
-     CS = 1;
-}
-	
-	
-void send_byte(unsigned char cmd)
-{
-      unsigned char i;
-       Somenop50();Somenop50(); //时序初始延时
-       for(i = 0;i < 8;i++)
-       {       //写cmd的最高位，  
-                if(cmd&0x80) // 最高位为1则写"1"
-                        DATA = 1; 
-                else   // 最高位为0写"0"
-                        DATA = 0;
-                // CLK形成下降沿,先1后0，注意延时时间要满足时序要求
-                CLK = 1; Somenop10();Somenop10();
-                CLK = 0; Somenop10();Somenop10();
-                //命令行左移，为写下一个位做准备
-                cmd = cmd << 1;       
-        }
-        DATA = 0;  //依照时序要求全部写完后Data清零 
-}		  
-
-unsigned char receive_byte(void)
-{
-      unsigned char i, in_byte;
-      DATA=1;  
-      Somenop50();Somenop50(); 
-      for (i=0;i<8;i++)
-      {
-              CLK=1;Somenop10();Somenop10();
-              //左移一位，空出最后一位存放新进来的位DATA 
-              in_byte=in_byte*2;  
-               //若新进来的位DATA为1，则in_byte的末位置1，否则不需要变
-              if (DATA)  
-                       in_byte=in_byte|0x01;
-              CLK=0; Somenop10();Somenop10();
-       }
-       DATA=0;
-       return (in_byte); //返回接收值
 }
 
 //////////////////////////////////////////////////////////////////////////
