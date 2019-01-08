@@ -23,6 +23,8 @@ Power
 */
 
 #include <REG52.H>	/* Special function register declarations */             
+#include <intrins.h>	/* _nop_ */
+
 #include "main.h"
 
 #include <stdio.h>                
@@ -33,8 +35,10 @@ Power
 unsigned char LEDValue[50] = {0xFC,0x44,0x79,0x5D,0xC5,0x9D,0xBD,0x54,0xFD,0xDD,0xF5,0xAD,0xB8,0x6D,0xB9,0xB1, //0-F
   							0xFE,0x46,0x7B,0x5F,0xC7,0x9F,0xBF,0x56,0xFF,0xDF,0xF7,0xAF,0xBA,0x6F,0xBB,0xB3, //0.-F.
 	                        0x00,0xA9,0xF1,0x21,0x2C,0x25,0x2D,0x01}; // 32null，33t，34P,35r,36u,37n,38o,39-
-  
+
+/* The memory map of LEDs */
 unsigned char DispBuff[8] = {32,32,32,32,32,32,32,32};
+
 unsigned char KeyTable[4] = {0x3B, 0x3A, 0x39, 0x38}; // down up back enter
 
 unsigned char run_options[10];
@@ -324,6 +328,10 @@ unsigned char receive_byte(void)
 
 //////////////////////////////////////////////////////////////////////////
 
+/*	Display the string on the LED. Since LED has two rows of four digits, 
+	if upper is TRUE, the string will be displayed on the top layer, otherwise
+	lower layer.
+*/
 void display_string_in_row (char* string, unsigned char upper){
 	unsigned char start_index;
 	unsigned char i;
