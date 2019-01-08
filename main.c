@@ -1,3 +1,13 @@
+/*
+@author
+Yuchen Wang
+
+@processor
+STC89C52: 8-bit Microcontroller
+	ROM: 8K bytes flash
+	RAM: 256 bytes, so we need two hex numbers for addressing.
+*/
+
 #include <REG52.H>                
 #include "main.h"
 
