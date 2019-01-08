@@ -73,6 +73,19 @@ struct _pid {
 	float integral;
 } pid;
 
+void main (void) {
+  	Init_7279();	// 初始化堆栈    			// 初始化7279
+  	DS18B20_Init();
+	Motor = 0;
+  	display_string_in_row("tP- ", TRUE);
+	TMOD = 0x01;
+	TH0 = timerH;
+	TL0 = timerL;
+	EA = 1;
+	ET0 = 1;
+ 	show_main_menu();
+}
+
 unsigned char check_LED (char c) {
 	if (c >= '0' && c <= '9') return (c - '0');
 	else if (c >= 'A' && c <= 'F') return (c - 'A' + 10);
@@ -1054,17 +1067,4 @@ void SendOneByte(U8 c)
 void send_temp_to_computer(){
 	SendOneByte(temp[1] * 10 + temp[2]);
 	SendOneByte(temp[3] * 10 + temp[4]);
-}
-
-void main (void) {
-  	Init_7279();	// 初始化堆栈    			// 初始化7279
-  	DS18B20_Init();
-	Motor = 0;
-  	display_string_in_row("tP- ", TRUE);
-	TMOD = 0x01;
-	TH0 = timerH;
-	TL0 = timerL;
-	EA = 1;
-	ET0 = 1;
- 	show_main_menu();
 }

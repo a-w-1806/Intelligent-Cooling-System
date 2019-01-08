@@ -62,6 +62,7 @@ unsigned char change_menu_ptr(unsigned char current, unsigned char inc, unsigned
 void show_PA_menu(void);
 void show_current_run(void);
 void show_current_temp_threshold(void);
+void show_main_menu(void);
 // unsigned char changeNumConti(unsigned char i);
 void change_num_conti(unsigned char *num);
 void wait_until_release(void);
