@@ -223,11 +223,11 @@ void Init_7279(void)
      CS = 1;   	   // 片选使能置1，完成初始化
 }
 
-void display(unsigned char buff[])
-{
+/*	Refresh the LEDs to show the digits in buff. */
+void display(unsigned char buff[]) {
   unsigned char i;
-  for( i=0 ; i<8 ; i++ )
-     write_7279(0x90+i,LEDValue[buff[i]]);	 
+  for(i = 0; i < 8; i++)
+    write_7279(0x90+i, LEDValue[buff[i]]);	 
 }
 
 
