@@ -366,7 +366,14 @@ void display_int_in_row(unsigned char i, unsigned char upper) {
 	display(DispBuff);
 }
 
-unsigned char change_menu_ptr(unsigned char current, unsigned char inc, unsigned char volume){
+/*	Scroll between different menu options.
+	@param
+	current: index of the current selected function.
+	inc: whether it is move to next one or last one.
+	volume: total number of available functions.
+	@return: the next selected index
+*/
+unsigned char change_menu_ptr(unsigned char current, unsigned char inc, unsigned char volume) {
 	if (inc == TRUE) {
 		if (current == volume - 1) return 0;
 		else return ++current;
