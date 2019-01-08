@@ -6,6 +6,9 @@ Yuchen Wang
 STC89C52: 8-bit Microcontroller
 	ROM: 8K bytes flash
 	RAM: 256 bytes, so we need two hex numbers for addressing.
+
+@chip
+HD7279A: used to connect to LED and keyboard.
 */
 
 #include <REG52.H>                
