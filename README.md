@@ -71,3 +71,17 @@ Given a temperature (which can be set up in PA- menu), the duty cycle is compute
 This is where you can set the parameters used in previous functionalities.
 
 Each time you enter PA- menu, you are required to input a password which is set in the source code, or you will not be able to get in.
+
+## Plotting the Temperature Curve on Your Computer!
+
+Prerequisites:
+  1. The system is connected to your PC.
+  2. Set serial port number to COM3.
+  3. Python environment is ready.
+  4. Type in the command line:
+  ```
+  python plotting.py
+  ```  
+  You should see a temperature curve pop up, and refresh in real time:
+  
+  <img src="images/plot.png" alt="plot" width="300"/>
