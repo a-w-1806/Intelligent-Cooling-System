@@ -27,11 +27,11 @@ while(1):
         s = str(binascii.b2a_hex(ser.read(1)))[2:-1]
         if len(s) > 0 : 
             if HLflag == 0:
-                a = int(s , 16)
+                integral = int(s , 16)
                 HLflag = 1
             else:
-                b = int(s , 16)
+                fractional = int(s , 16)
                 HLflag = 0
                 
-                temp.append(a + b / 100)
+                temp.append(integral + fractional / 100)
                 plot_durations(np.array(temp))
