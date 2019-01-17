@@ -14,12 +14,13 @@ An STC89C52-Microcontroller-based and PID-powered intelligent cooling system.
 - DS18B20: temperature sensor (温度采集)
 - 24C16: A 16K E2PROM (Electrically Erasable Programmable Read-Only Memory)
   - It can store data even without electriciy, which is different from RAM.
-- PC: Personal Computer, which is used to load the program, and print the temperature curve on the screen.
+- PC: Personal Computer, which is used to load the program, and print the temperature curve on the screen (**bonus!**).
 - Other
   - Keyboard (键盘)
     - Each button in the above picture is treated as a key as follows:
 
         <img src="images/kb.png" alt="keyboard" width="100"/>
+    - Support fast value change while holding the button pressed.
   - LED
   - Motor (电机运行), which is used to drive a cooling fan.
 
@@ -32,6 +33,7 @@ An STC89C52-Microcontroller-based and PID-powered intelligent cooling system.
 - Con-: motor speed change according to the temperature sensed
 - PId- (**bonus!**): adjust the speed of the cooling fan to keep the surrounding temperature at a user-given value
 - PA-: settings for parameters
+  - Password Authentication (**bonus!**)
 - 进入子菜单：entering the sub menus
 
 
@@ -64,3 +66,8 @@ Top LED shows the current temperature, and the bottom one shows the calculated P
 Given a temperature (which can be set up in PA- menu), the duty cycle is computed using [**PID controller**](https://en.wikipedia.org/wiki/PID_controller). The *proportional*, *integral* and *derivative* terms are set in the source code. The goal is to keep the surrounding temperature at a given value through adjusting the speed of the cooling fan. Top LED shows the current temperature, and the bottom one shows the calculated PWM duty cycle:
 
 <img src="images/pid.png" alt="pid" width="300"/>
+
+### PA-: Settings for Parameters
+This is where you can set the parameters used in previous functionalities.
+
+Each time you enter PA- menu, you are required to input a password which is set in the source code, or you will not be able to get in.
