@@ -30,6 +30,7 @@ An STC89C52-Microcontroller-based and PID-powered intelligent cooling system.
 - tP-: temperature sensing
 - run-: tests for the motor
 - Con-: motor speed change according to the temperature sensed
+- PId- (**bonus!**): adjust the speed of the cooling fan to keep the surrounding temperature at a user-given value
 - PA-: settings for parameters
 - 进入子菜单：entering the sub menus
 
@@ -57,3 +58,9 @@ in which:
 Top LED shows the current temperature, and the bottom one shows the calculated PWnow:
 
 <img src="images/control.png" alt="control" width="300"/>
+
+### PId- (**bonus!**): Adjust the Speed of the Cooling Fan to Keep the Surrounding Temperature at a User-Given Value
+
+Given a temperature (which can be set up in PA- menu), the duty cycle is computed using [**PID controller**](https://en.wikipedia.org/wiki/PID_controller). The *proportional*, *integral* and *derivative* terms are set in the source code. The goal is to keep the surrounding temperature at a given value through adjusting the speed of the cooling fan. Top LED shows the current temperature, and the bottom one shows the calculated PWM duty cycle:
+
+<img src="images/pid.png" alt="pid" width="300"/>
