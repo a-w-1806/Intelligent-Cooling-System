@@ -20,8 +20,8 @@
 #define TC_VAL  (256-FOSC/16/12/BAUD)
 
 sbit Motor  = P1^2;
-sbit ECLK  = P1^1;
-sbit EDTA  =  P1^0;
+// sbit ECLK  = P1^1;
+// sbit EDTA  =  P1^0;
 // extern sbit CS;
 // extern sbit CLK;
 // extern sbit DATA;

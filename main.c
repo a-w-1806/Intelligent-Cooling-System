@@ -23,10 +23,11 @@ Power
 */
 
 #include <REG52.H>	/* Special function register declarations */             
-#include <intrins.h>	/* _nop_ */
+#include "Somenop.h"
 
 #include "HD7279A.h"
 #include "DS18B20.h"
+#include "EEPROM_24C16.h"
 #include "main.h"
 
 #include <stdio.h>                
@@ -623,122 +624,6 @@ void calc_current_PWM(){
 		return;
 	}
 	PWM = nominator / denom + 50;
-}
-
-void estart() //起始信号 当时钟线为1，数据线有个下降沿
-{   
-    ECLK=1;
-    EDTA=1;
-    Somenop();
-    EDTA=0; 
-    ECLK=0;
-    Somenop();
-}
-
-void estop()//终止信号 当时钟线为1，数据线有个上升沿
-{
-    EDTA=0;
-    ECLK=1;
-    Somenop();
-    EDTA=1;
-    ECLK=0;
-    Somenop();
-}
-
-bit ack() //应答信号由从机发出信号为sda由1变为0
-{
-    
-    ECLK=1;
-    EDTA=1;
-    if(EDTA==1){
-        ECLK=0;
-        return 1;
-    }else{
-        ECLK=0;
-        return 0;
-    }
-    
-}
-
-// void init_24c16()//24c16初始化
-// {
-//     EDTA=1;
-//     Somenop();
-//     ECLK=1;
-//     Somenop();
-// }
-
-void ewrite_byte(unsigned char dat) //字节写（写数据或地址）数据线sda不变，scl有个上升沿，写入数据
-{
-    unsigned char i;
-    for(i=0;i<8;i++)
-    {
-        ECLK=0;
-        Somenop();
-        EDTA=dat&0x80;
-        Somenop();
-        ECLK=1;
-        Somenop();
-        dat <<= 1;
-    }
-    ECLK=0;
-    Somenop();
-}
-
-unsigned char eread_byte() //字节读 scl有下降沿读出
-{
-    unsigned char i,k;
-    for(i=0;i<8;i++)
-    {
-    ECLK=1;
-    Somenop();
-    k=(k<<1)|EDTA;
-    ECLK=0;
-    Somenop();
-    }
-    return k;
-}
-
-void ewrite_add(unsigned char add,unsigned char dat)
-{
-    do{
-    estart();
-    ewrite_byte(0xa0);
-    }
-    while(ack());
-    
-    ewrite_byte(add);
-    ack();
-    do{
-    ewrite_byte(dat);
-    }
-    while(ack());
-    estop();
-}
-
-unsigned char eread_add(unsigned char add)
-{
-    unsigned char dat;
-
-    do{
-    estart();
-    ewrite_byte(0xa0);
-    }
-    while(ack());
-    
-    ewrite_byte(add);
-    ack();
-
-    
-    do{
-    estart();
-    ewrite_byte(0xa1);
-    }
-    while(ack());
-
-    dat=eread_byte();
-    estop();
-    return dat;
 }
 
 void read_run_options_from_C16() {
