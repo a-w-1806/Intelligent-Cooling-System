@@ -26,6 +26,7 @@ Power
 #include <intrins.h>	/* _nop_ */
 
 #include "HD7279A.h"
+#include "DS18B20.h"
 #include "main.h"
 
 #include <stdio.h>                
@@ -152,83 +153,11 @@ void show_main_menu(void) {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-void DS18B20_Init()
-{
-	DS1820_Reset();
-	DS1820_WriteData(0xCC); // 跳过ROM
-	DS1820_WriteData(0x4E); // 写暂存器
-	DS1820_WriteData(0x20); // 往暂存器的第三字节中写上限值
-	DS1820_WriteData(0x00); // 往暂存器的第四字节中写下限值
-	DS1820_WriteData(0x7F); // 将配置寄存器配置为12 位精度
-	DS1820_Reset();
-}
-
-
-/**********************************************************
-*DS1820 复位及存在检测(通过存在脉冲可以判断DS1820 是否损坏)
-*函数名称:DS1820_Reset()
-*说明:函数返回一个位标量(0 或1)flag=0 存在,反之flag=1 不存在
-**********************************************************/
-bit DS1820_Reset()
-{
-	U8 i;
-	bit flag;
-	DS1820_DQ = 0; //拉低总线
-	for (i=240;i>0;i--); //延时480 微秒,产生复位脉冲
-	DS1820_DQ = 1; //释放总线
-	for (i=40;i>0;i--); //延时80 微秒对总线采样
-	flag = DS1820_DQ; //对数据脚采样
-	for (i=200;i>0;i--); //延时400 微秒等待总线恢复
-	return (flag); //根据flag 的值可知DS1820 是否存在或损坏 ，可加声音告警提示DS1820 故障
-}
-
-/**********************************************************
-*写数据到DS1820
-*函数名称:DS1820_WriteData()
-**********************************************************/
-void DS1820_WriteData(U8 wData)
-{
-    U8 i,j;
-    for (i=8;i>0;i--)
-    {
-    DS1820_DQ = 0; //拉低总线,产生写信号
-    for (j=2;j>0;j--); //延时4us
-    DS1820_DQ = wData&0x01; //发送1 位
-    for (j=30;j>0;j--); //延时60us,写时序至少要60us
-    DS1820_DQ = 1; //释放总线,等待总线恢复
-    wData>>=1; //准备下一位数据的传送
-    }
-}
-
-/**********************************************************
-*从DS1820 中读出数据
-*函数名称:DS1820_ReadData()
-**********************************************************/
-U8 DS1820_ReadData()
-{
-    U8 i,j,TmepData;
-    for (i=8;i>0;i--)
-    {
-    TmepData>>=1;
-    DS1820_DQ = 0; //拉低总线,产生读信号
-    for (j=2;j>0;j--); //延时4us
-    DS1820_DQ = 1; //释放总线,准备读数据
-    for (j=4;j>0;j--); //延时8 微秒读数据
-    if (DS1820_DQ == 1)
-    { TmepData |= 0x80;}
-    for (j=30;j>0;j--); //延时60us
-    DS1820_DQ = 1; //拉高总线,准备下一位数据的读取.
-    }
-    return (TmepData);//返回读到的数据
-}
-
 /*	Refresh the LEDs to show the digits in buff. */
 void display(unsigned char buff[]) {
-  unsigned char i;
-  for(i = 0; i < 8; i++)
-    write_7279(0x90+i, LEDValue[buff[i]]);	 
+	unsigned char i;
+	for(i = 0; i < 8; i++)
+	write_7279(0x90+i, LEDValue[buff[i]]);	 
 }
 
  void Key(void)
@@ -256,8 +185,6 @@ void display(unsigned char buff[]) {
 
    }	
 }
-
-//////////////////////////////////////////////////////////////////////////
 
 /*	Display the string on the LED. Since LED has two rows of four digits, 
 	if upper is TRUE, the string will be displayed on the top layer, otherwise
@@ -477,18 +404,18 @@ void show_temperature(unsigned char upper) {
 	while(1) {
 		Key();
 		if (KeyNum == BACK) return;
-		DS1820_Reset();
-		DS1820_WriteData(0xcc);
-		DS1820_WriteData(0x44);
+		DS18B20_Reset();
+		DS18B20_WriteData(0xcc);
+		DS18B20_WriteData(0x44);
 
-		DS1820_Reset();
-		DS1820_WriteData(0xcc);
-		DS1820_WriteData(0xbe);
+		DS18B20_Reset();
+		DS18B20_WriteData(0xcc);
+		DS18B20_WriteData(0xbe);
 
 		for (i = 0; i < 2; i++) {
-			temperature[i] = DS1820_ReadData();
+			temperature[i] = DS18B20_ReadData();
 		}
-		DS1820_Reset();
+		DS18B20_Reset();
 
 		display_temperature(upper);
 		count++;
@@ -733,13 +660,13 @@ bit ack() //应答信号由从机发出信号为sda由1变为0
     
 }
 
-void init_24c16()//24c16初始化
-{
-    EDTA=1;
-    Somenop();
-    ECLK=1;
-    Somenop();
-}
+// void init_24c16()//24c16初始化
+// {
+//     EDTA=1;
+//     Somenop();
+//     ECLK=1;
+//     Somenop();
+// }
 
 void ewrite_byte(unsigned char dat) //字节写（写数据或地址）数据线sda不变，scl有个上升沿，写入数据
 {

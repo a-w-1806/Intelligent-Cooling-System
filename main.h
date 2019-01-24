@@ -19,15 +19,12 @@
 #define BAUD    9600            //波特率
 #define TC_VAL  (256-FOSC/16/12/BAUD)
 
-sbit DS1820_DQ = P1^3;
-// extern DS1820_DQ
 sbit Motor  = P1^2;
 sbit ECLK  = P1^1;
 sbit EDTA  =  P1^0;
 // extern sbit CS;
 // extern sbit CLK;
 // extern sbit DATA;
-// extern sbit DS1820_DQ;
 // extern sbit Motor;
 // extern sbit ECLK;
 // extern sbit EDTA;
@@ -56,12 +53,6 @@ void wait_until_release(void);
 
 void show_temperature(unsigned char);
 void display_temperature(unsigned char);
-
-// sbit DS1820_DQ = P1^4;
-void DS18B20_Init();
-bit DS1820_Reset();
-void DS1820_WriteData(U8 wData);
-U8 DS1820_ReadData();
 
 void show_motor_test(void);
 void run_motor_with_PWM();
