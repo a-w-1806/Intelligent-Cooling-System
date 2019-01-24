@@ -15,20 +15,7 @@
 #define U8 unsigned char
 #define U16 unsigned short
 
-#define FOSC    11059200        //振荡频率
-#define BAUD    9600            //波特率
-#define TC_VAL  (256-FOSC/16/12/BAUD)
-
 sbit Motor  = P1^2;
-// sbit ECLK  = P1^1;
-// sbit EDTA  =  P1^0;
-// extern sbit CS;
-// extern sbit CLK;
-// extern sbit DATA;
-// extern sbit Motor;
-// extern sbit ECLK;
-// extern sbit EDTA;
-
 
 // KeyValue is the address, and KeyNum is the index
 unsigned char KeyNum, KeyValue;
@@ -47,7 +34,6 @@ void show_PA_menu(void);
 void show_current_run(void);
 void show_current_temp_threshold(void);
 void show_main_menu(void);
-// unsigned char changeNumConti(unsigned char i);
 void change_num_conti(unsigned char *num);
 void wait_until_release(void);
 
@@ -74,9 +60,6 @@ void write_PID_goal_temp_to_C16();
 void PIDInit();
 void calc_PWM_PID();
 
-void UART_ISR(void);
-void InitUART(void);
-void SendOneByte(U8 c);
 void send_temp_to_computer();
 
 #endif
