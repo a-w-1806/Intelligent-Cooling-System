@@ -37,7 +37,7 @@ void show_main_menu(void);
 void change_num_conti(unsigned char *num);
 void wait_until_release(void);
 
-void show_temperature(unsigned char);
+void refresh_show_temperature(unsigned char);
 void display_temperature(unsigned char);
 
 void show_motor_test(void);

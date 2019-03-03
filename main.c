@@ -15,7 +15,7 @@ DS18B20
 
 @Memory
 24C16: A 16K E2PROM (Electrically Erasable Programmable Read-Only Memory)
-	It can store data even without electriciy, which is different from RAM.
+	It can store data even without electricity, which is different from RAM.
 
 @Other
 Cooling Fan
@@ -47,6 +47,7 @@ unsigned char DispBuff[8] = {32,32,32,32,32,32,32,32};
 unsigned char KeyTable[4] = {0x3B, 0x3A, 0x39, 0x38}; // down up back enter
 
 unsigned char run_options[10];
+// The start address in C16 where you store the configurations of motor tests.
 unsigned char run_options_start_address = 0;
 
 unsigned char temp_threshold[2];
@@ -70,11 +71,12 @@ unsigned char TEMP_CONTROL_MODE = FALSE;
 
 unsigned char KeyFlag = 0;
 
+// Only changing PID configuration needs password. You can set the pwd here.
 unsigned char PIDPwd[4] = {0,0,0,0};
 unsigned char PIDGoalTempAddress = 12;
 
 struct _pid {
-	unsigned char goal_temp[3];
+	unsigned char goal_temp[3]; // Temperature: xx.x
 	unsigned char current_temp[3];
 	unsigned char Kp, Ki, Kd;
 	float current_PWM;
@@ -136,7 +138,7 @@ void show_main_menu(void) {
 				display_string_in_row(menu_buffer[current_menu], TRUE);
 			} else if (KeyNum == ENTER) {
 				switch(current_menu) {
-					case 0: show_temperature(FALSE); break;
+					case 0: refresh_show_temperature(FALSE); break;
 					case 1: show_motor_test(); break;
 					case 2:	con_with_temp(FALSE); 
 							display_string_in_row("Con-", TRUE); 
@@ -158,32 +160,29 @@ void show_main_menu(void) {
 /*	Refresh the LEDs to show the digits in buff. */
 void display(unsigned char buff[]) {
 	unsigned char i;
-	for(i = 0; i < 8; i++)
-	write_7279(0x90+i, LEDValue[buff[i]]);	 
+	for (i = 0; i < 8; i++) {
+		write_7279(0x90+i, LEDValue[buff[i]]);	 
+	}
 }
 
- void Key(void)
-{
+void Key(void) {
    unsigned char temp,i;
    temp = ReadKey();  //读键值
-   if (temp==0xff)
-   {
+   if (temp==0xff) {
 	KeyNum = 0xff;	
 	KeyValue = 0xff;
 	KeyFlag = 0;
-   }
-   else
-   {
-      if(KeyValue!=0xff && KeyFlag < 250){
-		KeyNum=0xff;
-		KeyFlag++;
-	  } 
-      else{
-		KeyValue = temp;  
-		for(i=0;i<=3;i++)
-			if (KeyValue == KeyTable[i])
-			{ KeyNum = i; break; }	
-      }
+   } else { 
+	    // After button released, it should not be considered as still having a key pressed.
+		if (KeyValue!=0xff && KeyFlag < 250) {
+			KeyNum=0xff;
+			KeyFlag++;
+		} else {
+			KeyValue = temp;  
+			for(i=0;i<=3;i++)
+				if (KeyValue == KeyTable[i])
+				{ KeyNum = i; break; }	
+		}
 
    }	
 }
@@ -293,8 +292,7 @@ void show_current_run(void) {
 	while (1) {
 		// display(DispBuff); //显示（按显缓单元的内容显示）
 		Key();
-		if (KeyValue != 0xff)
-		{ 
+		if (KeyValue != 0xff) { 
 			if (KeyNum == DOWN) {
 				current_menu = change_menu_ptr(current_menu, FALSE, 10);
 				DispBuff[7] = current_menu;
@@ -399,7 +397,7 @@ void wait_until_release(void) {
 
 
 
-void show_temperature(unsigned char upper) {
+void refresh_show_temperature(unsigned char upper) {
 	unsigned char i, count;
 	count = 0;
 	InitUART();
@@ -489,6 +487,7 @@ void display_temperature(unsigned char upper) {
 
 void show_motor_test(void) {
 	unsigned char current_menu = 0;
+	unsigned char num_configs = 10;
 	TEMP_CONTROL_MODE = FALSE;
 	read_run_options_from_C16();
 	display_string_in_row("r- 0", TRUE);
@@ -499,11 +498,11 @@ void show_motor_test(void) {
 		Key();
 		if (KeyValue != 0xff) { 
 			if (KeyNum == DOWN) {
-				current_menu = change_menu_ptr(current_menu, FALSE, 10);
+				current_menu = change_menu_ptr(current_menu, FALSE, num_configs);
 				DispBuff[7] = current_menu;
 				display_int_in_row(run_options[current_menu], FALSE);
 			} else if (KeyNum == UP) {
-				current_menu = change_menu_ptr(current_menu, TRUE, 10);
+				current_menu = change_menu_ptr(current_menu, TRUE, num_configs);
 				DispBuff[7] = current_menu;
 				display_int_in_row(run_options[current_menu], FALSE);
 			} else if (KeyNum == ENTER) {
@@ -583,7 +582,7 @@ void con_with_temp(unsigned char usingPID) {
 			TEMP_CONTROL_MODE = FALSE;
 			return;
 		}
-		show_temperature(TRUE);
+		refresh_show_temperature(TRUE);
 		if (i % 6 == 0)	display_int_in_row(PWM, FALSE);
 		Key();
 		if (KeyNum == BACK) {
@@ -722,7 +721,7 @@ void write_PID_goal_temp_to_C16() {
 unsigned char check_pwd() {
 	unsigned char i;
 	unsigned char flag = FALSE;
-	display_string_in_row("PA55", TRUE);
+	display_string_in_row("PA55", TRUE); // Look like PASS in LED.
 	display_string_in_row("0000", FALSE);
 	
 	for(i = 0; i < 4; i++) {
@@ -763,7 +762,7 @@ void calc_PWM_PID() {
 	// PIDInit();
 	goalTempFloat = pid.goal_temp[0] * 10 + (pid.goal_temp[1]-16) + pid.goal_temp[2] * 0.1;
 	pid.Kp = 50;
-	pid.Ki = 0;	// 下次先试试看Ki=0会发生什么 也许能验证对错
+	pid.Ki = 0;
 	pid.Kd = 20;
 
 	for (i = 0; i < 3; i++) {
