@@ -80,6 +80,8 @@ This is where you can set the parameters used in previous functionalities.
 
 Each time you want to change the parameters of PID, you are required to input a password which is set in the source code, or you will not be able to get in.
 
+https://github.com/Yuchen-Wang-SH/Intelligent-Cooling-System/blob/78f7a1aa6347441ee18ea67e04f43d63ba4ffca7/main.c#L74-L75
+
 ## Plotting the Temperature Curve on Your Computer!
 
 Prerequisites:
